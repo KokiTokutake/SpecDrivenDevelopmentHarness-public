@@ -279,22 +279,32 @@ tr:hover td { background: #F5F7FA; }
   align-items: start;
 }
 .kanban-col {
-  background: #ECEFF1;
+  background: #F5F7FA;
   border-radius: 10px;
-  padding: 12px;
-  min-height: 200px;
+  padding: 0 0 12px;
+  min-height: 240px;
+  border: 1px solid #DDE3EA;
+  transition: background .15s, outline .15s;
 }
 .kanban-col-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  border-radius: 10px 10px 0 0;
   font-weight: 700;
   font-size: 12px;
+  border-bottom: 1px solid #DDE3EA;
 }
+.kanban-col[data-status="pending"]     .kanban-col-header { background: #FFF3E0; color: #E65100; border-bottom-color: #FFCC80; }
+.kanban-col[data-status="in_progress"] .kanban-col-header { background: #E3F2FD; color: #1565C0; border-bottom-color: #90CAF9; }
+.kanban-col[data-status="review"]      .kanban-col-header { background: #F3E5F5; color: #6A1B9A; border-bottom-color: #CE93D8; }
+.kanban-col[data-status="done"]        .kanban-col-header { background: #E8F5E9; color: #2E7D32; border-bottom-color: #A5D6A7; }
+.kanban-col-body { padding: 0 10px; }
 .kanban-col-header .col-count {
-  background: var(--border);
-  color: var(--muted);
+  background: rgba(0,0,0,.1);
+  color: inherit;
   border-radius: 99px;
   padding: 1px 8px;
   font-size: 11px;
@@ -309,10 +319,27 @@ tr:hover td { background: #F5F7FA; }
   padding: 12px;
   margin-bottom: 8px;
   box-shadow: 0 1px 4px rgba(0,0,0,.07);
-  cursor: pointer;
-  transition: box-shadow .15s;
+  cursor: grab;
+  transition: box-shadow .15s, opacity .15s, transform .1s;
+  user-select: none;
+  border-left: 3px solid transparent;
 }
+.kanban-col[data-status="pending"]     .kanban-card { border-left-color: var(--col-draft); }
+.kanban-col[data-status="in_progress"] .kanban-card { border-left-color: var(--col-review); }
+.kanban-col[data-status="review"]      .kanban-card { border-left-color: #6A1B9A; }
+.kanban-col[data-status="done"]        .kanban-card { border-left-color: var(--col-approved); }
 .kanban-card:hover { box-shadow: 0 3px 10px rgba(0,0,0,.12); }
+.kanban-card.dragging {
+  opacity: 0.35;
+  cursor: grabbing;
+  transform: scale(0.97);
+}
+.kanban-col.drag-over {
+  background: #E3F2FD;
+  outline: 2px dashed var(--primary-mid);
+  outline-offset: -2px;
+}
+.kanban-col.drag-over .kanban-col-header { color: var(--primary-mid); }
 .kanban-card .card-id    { font-size: 10px; color: var(--muted); margin-bottom: 4px; }
 .kanban-card .card-title { font-size: 12px; font-weight: 600; margin-bottom: 8px; }
 .kanban-card .card-meta  { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
@@ -509,6 +536,70 @@ tr:hover td { background: #F5F7FA; }
 }
 .metric-val  { font-size: 24px; font-weight: 700; color: var(--primary); }
 .metric-label{ font-size: 11px; color: var(--muted); }
+
+/* ── SYNC BAR ── */
+.sync-bar {
+  padding: 10px 14px;
+  border-top: 1px solid rgba(255,255,255,.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+}
+#sync-status {
+  font-size: 11px;
+  color: #90A4AE;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+.sync-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+.sync-dot.disconnected { background: #607D8B; }
+.sync-dot.connected    { background: #66BB6A; }
+.sync-dot.syncing      { background: #42A5F5; animation: pulse .8s ease-in-out infinite alternate; }
+.sync-dot.error        { background: #EF5350; }
+@keyframes pulse { from { opacity: 1; } to { opacity: 0.3; } }
+.sync-connect-btn {
+  background: rgba(255,255,255,.1);
+  border: none;
+  border-radius: 5px;
+  color: #B0BEC5;
+  font-size: 11px;
+  padding: 4px 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: inherit;
+  transition: background .15s;
+  flex-shrink: 0;
+}
+.sync-connect-btn:hover { background: rgba(255,255,255,.18); color: #fff; }
+
+/* ── TOAST ── */
+.sdd-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #263238;
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 12px;
+  z-index: 9999;
+  box-shadow: 0 4px 16px rgba(0,0,0,.3);
+  transition: opacity .3s;
+  max-width: 320px;
+}
 
 /* scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }

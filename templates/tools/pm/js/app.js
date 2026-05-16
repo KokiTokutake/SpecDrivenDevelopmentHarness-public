@@ -46,7 +46,7 @@ const VIEWS = ['dashboard','specs','tasks','sprints','retros','issues','settings
 
 function navigate(view) {
   if (!VIEWS.includes(view)) view = 'dashboard';
-  // update nav
+  SDD.app.currentView = view;
   document.querySelectorAll('.nav-item').forEach(el => {
     el.classList.toggle('active', el.dataset.view === view);
   });
@@ -85,7 +85,7 @@ function renderView(view) {
       <button class="btn btn-primary" onclick="SDD.app.openModal('task','new')">＋ タスク</button>
       <button class="btn btn-warning" onclick="SDD.app.openModal('issue','new')">＋ 課題</button>`,
     specs:     () => `<button class="btn btn-primary" onclick="SDD.app.openModal('spec','new')">＋ 仕様書を追加</button>`,
-    tasks:     () => `<button class="btn btn-primary" onclick="SDD.app.openModal('task','new')">＋ タスクを追加</button>`,
+    tasks:     () => `<button class="btn btn-ghost" onclick="SDD.app.downloadTaskListMd()" title="task-list.md をダウンロード">⬇ MD エクスポート</button><button class="btn btn-primary" onclick="SDD.app.openModal('task','new')">＋ タスクを追加</button>`,
     sprints:   () => `<button class="btn btn-primary" onclick="SDD.app.openModal('sprint','new')">＋ スプリント作成</button>`,
     retros:    () => `<button class="btn btn-primary" onclick="SDD.app.openModal('retro','new')">＋ ふりかえり作成</button>`,
     issues:    () => `<button class="btn btn-warning" onclick="SDD.app.openModal('issue','new')">＋ 課題を追加</button>`,
@@ -315,13 +315,15 @@ function renderTasks() {
         const tasks = filtered.filter(t => t.status === col.key);
         const sp = tasks.reduce((s,t) => s + t.sp, 0);
         return `
-          <div class="kanban-col">
+          <div class="kanban-col" data-status="${col.key}">
             <div class="kanban-col-header">
-              <span style="color:${col.color}">${col.label}</span>
+              <span>${col.label}</span>
               <span class="col-count">${tasks.length}</span>
             </div>
-            <div style="font-size:11px;color:var(--muted);margin-bottom:8px">合計 ${sp} SP</div>
-            ${tasks.map(t => renderTaskCard(t, col.key)).join('')}
+            <div class="kanban-col-body">
+              <div style="font-size:11px;color:var(--muted);margin-bottom:8px">${sp} SP</div>
+              ${tasks.map(t => renderTaskCard(t, col.key)).join('')}
+            </div>
           </div>`;
       }).join('')}
     </div>`;
@@ -335,7 +337,7 @@ function renderTaskCard(t, currentStatus) {
     pending:'pending', in_progress:'pending', review:'in_progress', done:'review'
   };
   return `
-    <div class="kanban-card">
+    <div class="kanban-card" draggable="true" data-task-id="${h(t.id)}">
       <div class="card-id">${h(t.id)} ${t.specId?`· <span style="font-size:10px;color:var(--primary-mid)">${h(t.specId)}</span>`:''}
         ${t.issueNumber?`· #${t.issueNumber}`:''}</div>
       <div class="card-title">${h(t.title)}</div>
@@ -597,8 +599,60 @@ function renderIssues() {
 ═══════════════════════════════════════════════════════ */
 
 function renderSettings() {
-  const p = SDD.store.data.project;
+  const p  = SDD.store.data.project;
+  const fs = SDD.fs;
+  const connected = !!fs.dirHandle;
+
+  const syncCard = fs.supported ? `
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">📁 プロジェクトフォルダ同期</div>
+      ${connected ? `
+        <div style="background:#E8F5E9;border-radius:8px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:18px">🟢</span>
+          <div>
+            <div style="font-weight:700;color:#2E7D32;font-size:13px">接続済み</div>
+            <div class="text-muted text-sm" style="margin-top:2px;font-family:monospace">${h(fs.dirHandle.name)}</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div style="background:#F5F7FA;border-radius:8px;padding:14px">
+            <div style="font-weight:700;font-size:12px;margin-bottom:6px">↑ プッシュ（自動）</div>
+            <div class="text-muted text-sm" style="margin-bottom:10px">タスク・仕様書を変更するたびに自動でファイルへ書き込みます。</div>
+            <div style="font-family:monospace;font-size:10px;color:var(--muted);background:#fff;border-radius:4px;padding:6px 8px;margin-bottom:10px">
+              tasks/pm-data.json<br>tasks/task-list.md
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="SDD.fs.autoSync()">今すぐ同期</button>
+          </div>
+          <div style="background:#F5F7FA;border-radius:8px;padding:14px">
+            <div style="font-weight:700;font-size:12px;margin-bottom:6px">↓ プル（手動）</div>
+            <div class="text-muted text-sm" style="margin-bottom:10px">/pm-sync スキル実行後、更新されたファイルをブラウザに取り込みます。</div>
+            <div style="font-family:monospace;font-size:10px;color:var(--muted);background:#fff;border-radius:4px;padding:6px 8px;margin-bottom:10px">
+              tasks/pm-data.json → ブラウザ
+            </div>
+            <button class="btn btn-warning btn-sm" onclick="SDD.fs.pullFromProject()">プロジェクトから取得</button>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="SDD.fs.disconnect()">接続を解除</button>` : `
+        <div style="background:#F5F7FA;border-radius:8px;padding:14px;margin-bottom:14px;font-size:12px;color:var(--muted);line-height:1.7">
+          プロジェクトフォルダを接続すると、タスク・仕様書・スプリントの変更が
+          <strong>自動で</strong> ファイルへ書き込まれます。<br>
+          Claude Code の <code>/pm-sync</code> スキルと組み合わせると双方向同期が可能です。
+        </div>
+        <button class="btn btn-primary" onclick="SDD.fs.connect()">📁 プロジェクトフォルダを接続</button>
+        <div class="text-muted text-sm" style="margin-top:8px">
+          ※ Chrome または Edge が必要です（File System Access API）
+        </div>`}
+    </div>` : `
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">📁 プロジェクトフォルダ同期</div>
+      <div style="background:#FFF3E0;border-radius:8px;padding:12px 14px;color:#E65100;font-size:12px">
+        ⚠️ このブラウザは File System Access API に対応していません。<br>
+        Chrome または Edge をご利用ください。
+      </div>
+    </div>`;
+
   return `
+    ${syncCard}
     <div class="grid-2" style="gap:20px">
       <div class="card">
         <div class="card-title">プロジェクト設定</div>
@@ -707,6 +761,49 @@ function bindViewEvents(view) {
           renderView('tasks');
         }
       }
+    });
+
+    // ── drag & drop ──
+    let draggedTaskId = null;
+
+    content.addEventListener('dragstart', e => {
+      const card = e.target.closest('.kanban-card');
+      if (!card) return;
+      draggedTaskId = card.dataset.taskId;
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', draggedTaskId);
+    });
+
+    content.addEventListener('dragend', e => {
+      content.querySelectorAll('.kanban-card.dragging').forEach(c => c.classList.remove('dragging'));
+      content.querySelectorAll('.kanban-col.drag-over').forEach(c => c.classList.remove('drag-over'));
+    });
+
+    content.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const col = e.target.closest('[data-status]');
+      content.querySelectorAll('.kanban-col.drag-over').forEach(c => c.classList.remove('drag-over'));
+      if (col) col.classList.add('drag-over');
+    });
+
+    content.addEventListener('dragleave', e => {
+      const col = e.target.closest('.kanban-col');
+      if (col && !col.contains(e.relatedTarget)) col.classList.remove('drag-over');
+    });
+
+    content.addEventListener('drop', e => {
+      e.preventDefault();
+      const col = e.target.closest('[data-status]');
+      content.querySelectorAll('.kanban-col.drag-over').forEach(c => c.classList.remove('drag-over'));
+      if (!col || !draggedTaskId) return;
+      const newStatus = col.dataset.status;
+      if (newStatus) {
+        SDD.store.updateTask(draggedTaskId, {status: newStatus});
+        renderView('tasks');
+      }
+      draggedTaskId = null;
     });
   }
 
@@ -1277,6 +1374,227 @@ SDD.app = {
   setCurrentRetro(id) {
     currentRetroId = id;
     renderView('retros');
+  },
+
+  generateTaskListMd() {
+    const store = SDD.store;
+    const today = store.today();
+    const sprints = store.data.sprints;
+    const tasks   = store.data.tasks;
+
+    let md = `# タスク一覧\n\n`;
+    md += `> 最終更新: ${today} （SDD Project Manager より自動生成）\n\n`;
+    md += `---\n\n`;
+
+    // sprints
+    sprints.forEach(sprint => {
+      const sprintTasks = tasks.filter(t => t.sprintId === sprint.id);
+      const totalSP = sprintTasks.reduce((s,t) => s + (t.sp||0), 0);
+      const doneSP  = sprintTasks.filter(t=>t.status==='done').reduce((s,t) => s + (t.sp||0), 0);
+
+      md += `## ${sprint.name}`;
+      if (sprint.status === 'active') md += ' 🏃 アクティブ';
+      else if (sprint.status === 'completed') md += ' ✅ 完了';
+      else md += ' 📋 計画中';
+      md += `\n\n`;
+      md += `- **ゴール**: ${sprint.goal || '—'}\n`;
+      md += `- **期間**: ${sprint.startDate} 〜 ${sprint.endDate}\n`;
+      md += `- **進捗**: ${doneSP} / ${totalSP} SP 完了\n\n`;
+
+      if (sprintTasks.length) {
+        md += `| ID | タイトル | ステータス | 担当者 | SP | 仕様書 | Issue | PR | ブランチ |\n`;
+        md += `|----|---------|-----------|--------|:--:|--------|-------|:--:|----------|\n`;
+        sprintTasks.forEach(t => {
+          const statusIcon = {pending:'⬜', in_progress:'🔵', review:'🟡', done:'✅'}[t.status] || '';
+          md += `| ${t.id} | ${t.title} | ${statusIcon} ${t.status} | ${t.assignee||'—'} | ${t.sp} | ${t.specId||'—'} | ${t.issueNumber?'#'+t.issueNumber:'—'} | ${t.pr?'#'+t.pr:'—'} | ${t.branch||'—'} |\n`;
+        });
+        md += '\n';
+      } else {
+        md += `_タスクなし_\n\n`;
+      }
+    });
+
+    // unassigned
+    const unassigned = tasks.filter(t => !t.sprintId);
+    if (unassigned.length) {
+      md += `## スプリント未割当\n\n`;
+      md += `| ID | タイトル | ステータス | 担当者 | SP | 仕様書 | メモ |\n`;
+      md += `|----|---------|-----------|--------|:--:|--------|------|\n`;
+      unassigned.forEach(t => {
+        const statusIcon = {pending:'⬜', in_progress:'🔵', review:'🟡', done:'✅'}[t.status] || '';
+        md += `| ${t.id} | ${t.title} | ${statusIcon} ${t.status} | ${t.assignee||'—'} | ${t.sp} | ${t.specId||'—'} | ${t.notes||'—'} |\n`;
+      });
+      md += '\n';
+    }
+
+    // summary
+    const allDone = tasks.filter(t=>t.status==='done').length;
+    md += `---\n\n`;
+    md += `## サマリー\n\n`;
+    md += `| 項目 | 値 |\n|------|----|\n`;
+    md += `| 総タスク数 | ${tasks.length} |\n`;
+    md += `| 完了 | ${allDone} |\n`;
+    md += `| 進行中 | ${tasks.filter(t=>t.status==='in_progress').length} |\n`;
+    md += `| 未着手 | ${tasks.filter(t=>t.status==='pending').length} |\n`;
+    md += `| レビュー中 | ${tasks.filter(t=>t.status==='review').length} |\n`;
+
+    return md;
+  },
+
+  downloadTaskListMd() {
+    const md   = this.generateTaskListMd();
+    const blob = new Blob([md], {type: 'text/markdown'});
+    const a    = document.createElement('a');
+    a.href     = URL.createObjectURL(blob);
+    a.download = 'task-list.md';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+};
+
+/* ═══════════════════════════════════════════════════════
+   FILE SYSTEM SYNC  (File System Access API)
+═══════════════════════════════════════════════════════ */
+
+SDD.fs = {
+  dirHandle: null,
+  _busy: false,
+  supported: ('showDirectoryPicker' in window),
+
+  /* ── ユーザーがフォルダを選択して接続 ── */
+  async connect() {
+    if (!this.supported) {
+      alert('このブラウザは File System Access API に対応していません。\nChrome または Edge をご利用ください。');
+      return;
+    }
+    try {
+      this.dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+      this._setStatus('connected');
+      // 既存の pm-data.json があればインポート
+      const imported = await this._readPmData(true);
+      if (imported) {
+        SDD.app.updateSidebarProjectName();
+        navigate(SDD.app.currentView || 'dashboard');
+        this._toast('✅ pm-data.json を読み込みました');
+      } else {
+        // 初回接続：現在データをプッシュ
+        await this._writeAll();
+        this._toast('✅ プロジェクトフォルダに接続しました');
+      }
+      this._refreshSettingsIfOpen();
+    } catch (e) {
+      if (e.name !== 'AbortError') {
+        this._setStatus('error');
+        this._toast('❌ 接続エラー: ' + e.message);
+      }
+    }
+  },
+
+  /* ── 接続解除 ── */
+  disconnect() {
+    this.dirHandle = null;
+    this._setStatus('disconnected');
+    const btn = document.getElementById('sync-connect-btn');
+    if (btn) { btn.textContent = '📁 接続'; btn.onclick = () => SDD.fs.connect(); }
+    this._refreshSettingsIfOpen();
+  },
+
+  /* ── 自動同期（save() から呼ばれる） ── */
+  async autoSync() {
+    if (!this.dirHandle || this._busy) return;
+    this._busy = true;
+    this._setStatus('syncing');
+    try {
+      await this._writeAll();
+      this._setStatus('connected');
+    } catch (e) {
+      console.warn('[SDD Sync]', e);
+      this._setStatus('error');
+    } finally {
+      this._busy = false;
+    }
+  },
+
+  /* ── プル：pm-data.json → ブラウザ ── */
+  async pullFromProject() {
+    if (!this.dirHandle) return;
+    this._setStatus('syncing');
+    const ok = await this._readPmData(false);
+    if (ok) {
+      SDD.app.updateSidebarProjectName();
+      navigate(SDD.app.currentView || 'dashboard');
+      this._toast('✅ プロジェクトからデータを取得しました');
+    } else {
+      this._toast('⚠️ tasks/pm-data.json が見つかりません\n先に同期を実行してください');
+    }
+    this._setStatus('connected');
+    this._refreshSettingsIfOpen();
+  },
+
+  /* ── ファイル書き込み ── */
+  async _writeAll() {
+    await this._writePmData();
+    await this._writeTaskListMd();
+  },
+
+  async _writePmData() {
+    const dir = await this.dirHandle.getDirectoryHandle('tasks', { create: true });
+    const fh  = await dir.getFileHandle('pm-data.json', { create: true });
+    const w   = await fh.createWritable();
+    await w.write(JSON.stringify(SDD.store.data, null, 2));
+    await w.close();
+  },
+
+  async _writeTaskListMd() {
+    const dir = await this.dirHandle.getDirectoryHandle('tasks', { create: true });
+    const fh  = await dir.getFileHandle('task-list.md', { create: true });
+    const w   = await fh.createWritable();
+    await w.write(SDD.app.generateTaskListMd());
+    await w.close();
+  },
+
+  /* ── ファイル読み込み ── */
+  async _readPmData(silent) {
+    try {
+      const dir  = await this.dirHandle.getDirectoryHandle('tasks');
+      const fh   = await dir.getFileHandle('pm-data.json');
+      const file = await fh.getFile();
+      const text = await file.text();
+      SDD.store.importJSON(text);
+      return true;
+    } catch (e) {
+      if (e.name === 'NotFoundError') return false;
+      if (!silent) this._toast('❌ 読込エラー: ' + e.message);
+      return false;
+    }
+  },
+
+  /* ── UI ── */
+  _setStatus(status) {
+    const el  = document.getElementById('sync-status');
+    const btn = document.getElementById('sync-connect-btn');
+    if (!el) return;
+    const cfg = {
+      disconnected: { dot: 'disconnected', label: '未接続',   btnText: '📁 接続',  btnFn: () => SDD.fs.connect() },
+      connected:    { dot: 'connected',    label: '同期済み', btnText: '⏏ 解除',  btnFn: () => SDD.fs.disconnect() },
+      syncing:      { dot: 'syncing',      label: '同期中…',  btnText: '⏏ 解除',  btnFn: () => SDD.fs.disconnect() },
+      error:        { dot: 'error',        label: 'エラー',   btnText: '📁 再接続', btnFn: () => SDD.fs.connect() }
+    }[status] || { dot: 'disconnected', label: '未接続', btnText: '📁 接続', btnFn: () => SDD.fs.connect() };
+
+    el.innerHTML = `<span class="sync-dot ${cfg.dot}"></span>${cfg.label}`;
+    if (btn) { btn.textContent = cfg.btnText; btn.onclick = cfg.btnFn; }
+  },
+
+  _toast(msg) {
+    const t = document.createElement('div');
+    t.className = 'sdd-toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 350); }, 3000);
+  },
+
+  _refreshSettingsIfOpen() {
+    if (SDD.app.currentView === 'settings') renderView('settings');
   }
 };
 

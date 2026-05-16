@@ -63,6 +63,13 @@ SDD ハーネスで使えるスキルを工程別に一覧表示し、現在の�
 | `/impl-check` | 実装が受入基準を満たしているか確認する（PR前） |
 | `/task-done` | タスク完了・PR作成・レビュー依頼 |
 
+### 工程5→6: テスト自動化（Test）
+| スキル | 使う場面 |
+|--------|---------|
+| `/test-write` | 仕様書の受入基準から Playwright テストを自動生成 |
+| `/test-run` | Playwright テストを実行して結果を確認 |
+| `/test-report` | テスト結果レポートを生成・仕様書へ反映 |
+
 ### 工程6: 検証・受入（Verify）
 | スキル | 使う場面 |
 |--------|---------|
@@ -76,9 +83,17 @@ SDD ハーネスで使えるスキルを工程別に一覧表示し、現在の�
 | `/incident-handle` | インシデント対応ガイド（本番問題発生時） |
 | `/retro-run` | レトロスペクティブの実施（スプリント終了後） |
 
+### 🖥️ PM ツール（Web プロジェクト管理）
+| スキル | 使う場面 |
+|--------|---------|
+| `/pm-setup` | SDD PM ツールの初期設定（プロジェクト開始時） |
+| `/sprint-start` | 新スプリントの開始（ゴール・タスク設定） |
+| `/sprint-end` | スプリント完了・ふりかえりへの引継ぎ |
+| `/pm-sync` | PM ツール ↔ プロジェクトファイル双方向同期 |
+
 ---
 
-合計: 22スキル
+合計: 29スキル
 ```
 
 ### STEP 3: 現在の工程に応じたオススメを表示
@@ -107,7 +122,10 @@ SDD ハーネスで使えるスキルを工程別に一覧表示し、現在の�
 仕様書を書く:         /spec-write → /spec-review
 タスクを管理する:     /tasks-plan → /task-start → /task-done
 実装を進める:         /impl-guide → /impl-check
+テスト自動化:         /test-write → /test-run → /test-report
 リリース準備:         /accept-run → /spec-trace → /release-prep
 振り返り:             /retro-run
 困ったとき:           /sdd-health
+
+PM ツール:            /pm-setup → /sprint-start → /sprint-end → /retro-run
 ```

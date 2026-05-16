@@ -227,11 +227,18 @@ window.SDD.store = {
 
   save() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+    // Auto-sync to project files if connected
+    if (window.SDD && window.SDD.fs && window.SDD.fs.dirHandle) {
+      window.SDD.fs.autoSync().catch(() => {});
+    }
   },
 
   reset() {
     this.data = JSON.parse(JSON.stringify(SEED_DATA));
-    this.save();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+    if (window.SDD && window.SDD.fs && window.SDD.fs.dirHandle) {
+      window.SDD.fs.autoSync().catch(() => {});
+    }
   },
 
   /* ── helpers ── */
