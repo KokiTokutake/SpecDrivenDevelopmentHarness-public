@@ -40,12 +40,41 @@ SDD ハーネステンプレートをベースに、このプロジェクト固�
 - よく使うコマンド（開発サーバー起動・テスト実行・ビルド）
 - ディレクトリ構造（`src/` 以下の主要フォルダ）
 
-### STEP 4: GitHub 設定チェックリスト表示
+### STEP 4: Claude Code hooks のセットアップ確認
+
+`.claude/settings.json` と `.claude/hooks/` が存在するか確認し、ない場合はテンプレートからコピーするよう案内する:
+
+```
+✅ Claude Code hooks の確認
+
+  .claude/settings.json         — 存在確認済み / ⚠️ 見つかりません
+  .claude/hooks/guard-dangerous-bash.sh  — 存在確認済み / ⚠️ 見つかりません
+  .claude/hooks/guard-spec-edit.sh       — 存在確認済み / ⚠️ 見つかりません
+
+hooks が設定されていると以下のガードが有効になります:
+  - rm -rf / や git reset --hard などの破壊的コマンドのブロック
+  - approved 仕様書への無断編集のブロック（/spec-change への誘導）
+
+hooks ファイルをコピーしますか？ (yes / skip)
+```
+
+`yes` の場合、テンプレートから hooks ファイルをプロジェクトにコピーする:
+
+```bash
+mkdir -p .claude/hooks
+# テンプレートから hooks をコピー（ハーネスのパスに応じて変更）
+cp [harness-path]/templates/.claude/settings.json .claude/settings.json
+cp [harness-path]/templates/.claude/hooks/guard-dangerous-bash.sh .claude/hooks/
+cp [harness-path]/templates/.claude/hooks/guard-spec-edit.sh .claude/hooks/
+chmod +x .claude/hooks/*.sh
+```
+
+### STEP 5: GitHub 設定チェックリスト表示
 
 `docs/guides/github-setup.md` の規模別設定を参照し、チーム規模に合ったチェックリストを表示する。
 ユーザーが完了した項目を ✅ で確認しながら進める。
 
-### STEP 5: 完了サマリー
+### STEP 6: 完了サマリー
 
 ```
 ✅ SDD 導入セットアップ完了
@@ -53,6 +82,13 @@ SDD ハーネステンプレートをベースに、このプロジェクト固�
 作成・更新したファイル:
   .constitution/Constitution.md
   CLAUDE.md
+  .claude/settings.json（hooks設定）
+  .claude/hooks/guard-dangerous-bash.sh
+  .claude/hooks/guard-spec-edit.sh
+
+有効になったガード:
+  ⛔ 危険なbashコマンド（rm -rf, git reset --hard 等）の自動ブロック
+  ⛔ approved 仕様書の無断編集ブロック → /spec-change への誘導
 
 次のステップ:
   /charter-review  → Constitution.md の品質確認

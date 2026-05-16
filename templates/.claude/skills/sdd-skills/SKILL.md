@@ -83,6 +83,12 @@ SDD ハーネスで使えるスキルを工程別に一覧表示し、現在の�
 | `/incident-handle` | インシデント対応ガイド（本番問題発生時） |
 | `/retro-run` | レトロスペクティブの実施（スプリント終了後） |
 
+### 🧠 継続学習（Learning）
+| スキル | 使う場面 |
+|--------|---------|
+| `/review-learn` | マージ済みPRのレビュー指摘を自動抽出してパターンDBに蓄積 |
+| `/review-patterns` | 蓄積パターンの閲覧・検索（仕様書・設計書作成前に参照） |
+
 ### 🖥️ PM ツール（Web プロジェクト管理）
 | スキル | 使う場面 |
 |--------|---------|
@@ -93,7 +99,7 @@ SDD ハーネスで使えるスキルを工程別に一覧表示し、現在の�
 
 ---
 
-合計: 29スキル
+合計: 31スキル
 ```
 
 ### STEP 3: 現在の工程に応じたオススメを表示
@@ -125,6 +131,7 @@ SDD ハーネスで使えるスキルを工程別に一覧表示し、現在の�
 テスト自動化:         /test-write → /test-run → /test-report
 リリース準備:         /accept-run → /spec-trace → /release-prep
 振り返り:             /retro-run
+継続学習:             /review-learn → /review-patterns
 困ったとき:           /sdd-health
 
 PM ツール:            /pm-setup → /sprint-start → /sprint-end → /retro-run

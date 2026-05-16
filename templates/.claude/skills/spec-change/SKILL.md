@@ -71,11 +71,16 @@ Constitution.md の変更管理ルールに照らして変更規模を判定し�
 ```bash
 # ブランチ作成
 git checkout -b spec/[issue番号]-[変更概要]
+```
 
-# 仕様書を更新
-# (変更を適用)
+**注意（hooks ガード対応）**: このプロジェクトでは approved 仕様書の直接編集を hooks でガードしています。
+仕様書編集の前に、まずステータスを `under_review` に変更することで hooks のバイパス条件を満たします。
 
-# コミット
+```bash
+# ステータスを under_review に変更してから編集する（hooksが検知して許可する）
+# STEP 1: status: approved → status: under_review に変更
+# STEP 2: 変更内容を適用
+# STEP 3: コミット
 git add docs/spec/
 git commit -m "change: SPEC-XXX-001 [変更概要]"
 
