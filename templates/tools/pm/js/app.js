@@ -106,28 +106,26 @@ function renderDashboard() {
   const d = store.data;
   const score = store.calcSddScore();
   const scoreCls = score >= 80 ? 'excellent' : score >= 60 ? 'good' : score >= 40 ? 'warning' : 'poor';
+  const scoreColor = score >= 80 ? 'var(--col-approved)' : score >= 60 ? 'var(--col-review)' : score >= 40 ? 'var(--col-draft)' : 'var(--col-high)';
 
-  const activeSprint = store.getActiveSprint();
-  const sprintHtml = activeSprint ? (() => {
-    const tasks = store.getSprintTasks(activeSprint.id);
-    const total = tasks.reduce((s,t) => s + t.sp, 0);
-    const done  = tasks.filter(t => t.status === 'done').reduce((s,t) => s + t.sp, 0);
-    const pct   = total ? Math.round((done/total)*100) : 0;
-    const rem   = store.getRemainingDays(activeSprint.endDate);
-    return `
-      <div class="card section-gap">
-        <div class="card-title">現在のスプリント — ${h(activeSprint.name)}</div>
-        <div class="sprint-active-card">
-          <div style="font-size:12px;color:var(--muted);margin-bottom:8px">${h(activeSprint.goal)}</div>
-          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
-            <span>${done} / ${total} SP 完了</span>
-            <span style="color:var(--primary-mid);font-weight:700">${pct}%</span>
-            ${rem !== null ? `<span style="color:var(--muted)">残 ${rem} 日</span>` : ''}
-          </div>
-          <div class="progress-wrap"><div class="progress-bar blue" style="width:${pct}%;height:10px"></div></div>
-        </div>
-      </div>`;
-  })() : '<div class="card section-gap"><div class="empty-state">アクティブなスプリントがありません</div></div>';
+  // SVG ring: circumference = 2π×34 ≈ 213.6
+  const R = 34, C = 2 * Math.PI * R;
+  const dash = (score / 100) * C;
+  const scoreRing = `
+    <div class="score-kpi">
+      <div class="score-ring-svg ${scoreCls}">
+        <svg width="88" height="88" viewBox="0 0 88 88">
+          <circle cx="44" cy="44" r="${R}" fill="none" stroke="var(--bg-sidebar)" stroke-width="6"/>
+          <circle class="ring-fg" cx="44" cy="44" r="${R}" fill="none" stroke-width="6"
+            stroke-linecap="round"
+            stroke-dasharray="${dash.toFixed(1)} ${C.toFixed(1)}"
+            stroke-dashoffset="0"/>
+        </svg>
+        <div class="score-ring-val ring-val" style="color:${scoreColor}">${score}</div>
+      </div>
+      <div class="score-name">SDD スコア</div>
+      <div class="score-desc">仕様先行遵守率</div>
+    </div>`;
 
   // spec status
   const specCounts = {approved:0, review:0, draft:0, deprecated:0};
@@ -135,96 +133,151 @@ function renderDashboard() {
   const specTotal = d.specs.length || 1;
 
   // task status
-  const taskCounts = {pending:0, in_progress:0, review:0, done:0};
+  const taskCounts = {done:0, in_progress:0, review:0, pending:0};
   d.tasks.forEach(t => { if (taskCounts[t.status] !== undefined) taskCounts[t.status]++; });
   const taskTotal = d.tasks.length || 1;
 
+  // segment bar helper
+  function segBar(counts, total, keys) {
+    const bars = keys.map(([k, cls]) => {
+      const pct = Math.round(((counts[k]||0) / total) * 100);
+      return pct > 0 ? `<div class="seg-bar-item ${cls}" style="flex:${pct}"></div>` : '';
+    }).join('');
+    const legend = keys.map(([k, cls, label]) => {
+      const n = counts[k] || 0;
+      return n > 0 ? `<span class="seg-legend-item"><span class="seg-legend-dot" style="background:var(--col-${cls})"></span>${label} ${n}</span>` : '';
+    }).join('');
+    return `<div class="seg-bar">${bars}</div><div class="seg-legend">${legend}</div>`;
+  }
+
+  // status rows helper
+  function statusRows(counts, total, defs) {
+    return defs.map(([k, label]) => {
+      const v = counts[k] || 0;
+      const pct = Math.round((v / total) * 100);
+      return `
+        <div class="status-row">
+          <div class="status-row-label">
+            <span class="status-dot ${k}"></span>${label}
+          </div>
+          <div class="status-row-bar">
+            <div class="status-row-bar-fill ${k}" style="width:${pct}%;background:var(--col-${k === 'in_progress' ? 'in-progress' : k})"></div>
+          </div>
+          <div class="status-row-count">${v}</div>
+        </div>`;
+    }).join('');
+  }
+
   // open issues
   const openIssues = d.issues.filter(i => i.status !== 'resolved').slice(0, 5);
+  const openCount  = d.issues.filter(i => i.status !== 'resolved').length;
 
-  // activity
-  const activity = d.activityLog.slice(0, 10);
-
-  return `
-    <div class="grid-4 section-gap">
-      <div class="card" style="text-align:center;padding:24px 16px">
-        <div class="score-ring-wrap" style="justify-content:center;flex-direction:column;gap:8px">
-          <div class="score-ring ${scoreCls}">${score}</div>
+  // sprint
+  const activeSprint = store.getActiveSprint();
+  const sprintHtml = activeSprint ? (() => {
+    const tasks = store.getSprintTasks(activeSprint.id);
+    const total = tasks.reduce((s,t) => s + (t.sp||0), 0);
+    const done  = tasks.filter(t => t.status === 'done').reduce((s,t) => s + (t.sp||0), 0);
+    const pct   = total ? Math.round((done/total)*100) : 0;
+    const rem   = store.getRemainingDays(activeSprint.endDate);
+    const spDash  = (pct / 100) * C;
+    return `
+      <div class="sprint-dash-card section-gap">
+        <div class="sprint-dash-header">
           <div>
-            <div style="font-weight:700;font-size:13px;color:var(--primary)">SDD 遵守率</div>
-            <div class="text-muted text-sm">仕様先行スコア</div>
+            <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px;font-family:'JetBrains Mono',monospace;">ACTIVE SPRINT</div>
+            <div class="sprint-dash-name">${h(activeSprint.name)}</div>
+            <div class="sprint-dash-goal">${h(activeSprint.goal)}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+            <div class="sprint-dash-pct">${pct}<span style="font-size:16px">%</span></div>
+            ${rem !== null ? `<span class="sprint-dash-days">残 ${rem} 日</span>` : ''}
           </div>
         </div>
-      </div>
-      <div class="card" style="text-align:center;padding:24px 16px">
-        <div class="stat-num">${d.specs.length}</div>
-        <div class="stat-label">仕様書</div>
-        <div class="mt-8" style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap">
-          ${Object.entries(specCounts).map(([k,v]) => v ? `<span class="badge badge-${k}">${v}</span>` : '').join('')}
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+          <div class="sprint-dash-sp"><span>${done}</span> / ${total} SP 完了</div>
         </div>
+        <div class="progress-wrap"><div class="progress-bar blue" style="width:${pct}%;height:5px"></div></div>
+      </div>`;
+  })() : `
+    <div class="card section-gap" style="border-style:dashed;text-align:center;padding:20px">
+      <div style="font-size:12px;color:var(--muted)">アクティブなスプリントがありません</div>
+      <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="SDD.app.openModal('sprint','new')">＋ スプリントを開始</button>
+    </div>`;
+
+  // activity
+  const activity = d.activityLog.slice(0, 8);
+
+  return `
+    <!-- KPI row -->
+    <div class="dash-kpi-grid section-gap">
+      <div class="kpi-card">${scoreRing}</div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">仕様書</div>
+        <div class="kpi-number" style="color:var(--accent)">${d.specs.length}</div>
+        ${segBar(specCounts, specTotal, [['approved','approved','approved'],['review','review','review'],['draft','draft','draft'],['deprecated','deprecated','deprecated']])}
       </div>
-      <div class="card" style="text-align:center;padding:24px 16px">
-        <div class="stat-num">${d.tasks.length}</div>
-        <div class="stat-label">タスク</div>
-        <div class="mt-8" style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap">
-          ${Object.entries(taskCounts).map(([k,v]) => v ? `<span class="badge badge-${k}">${v}</span>` : '').join('')}
-        </div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">タスク</div>
+        <div class="kpi-number" style="color:var(--accent-3)">${d.tasks.length}</div>
+        ${segBar(taskCounts, taskTotal, [['done','done','done'],['in_progress','in-progress','in_progress'],['review','review','review'],['pending','pending','pending']])}
       </div>
-      <div class="card" style="text-align:center;padding:24px 16px">
-        <div class="stat-num" style="color:${openIssues.length>0?'var(--col-high)':'var(--col-approved)'}">${d.issues.filter(i=>i.status!=='resolved').length}</div>
-        <div class="stat-label">未解決の課題</div>
+
+      <div class="kpi-card">
+        <div class="kpi-label">未解決の課題</div>
+        <div class="kpi-number" style="color:${openCount > 0 ? 'var(--col-high)' : 'var(--col-approved)'}">${openCount}</div>
+        <div class="kpi-sub" style="margin-top:10px">${openCount > 0 ? `${openIssues.filter(i=>i.priority==='High').length} 件 High 優先度` : '課題なし'}</div>
       </div>
     </div>
 
+    <!-- Sprint -->
     ${sprintHtml}
 
+    <!-- Status breakdown + Issues -->
     <div class="grid-2 section-gap">
       <div class="card">
-        <div class="card-title">仕様書ステータス内訳</div>
-        ${Object.entries(specCounts).map(([k,v]) => `
-          <div style="margin-bottom:10px">
-            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
-              <span class="badge badge-${k}">${k}</span><span>${v}件</span>
-            </div>
-            <div class="progress-wrap"><div class="progress-bar ${k==='approved'?'green':k==='review'?'blue':k==='draft'?'orange':'gray'}"
-              style="width:${Math.round((v/specTotal)*100)}%;height:8px"></div></div>
-          </div>`).join('')}
+        <div class="card-title">仕様書 ステータス</div>
+        ${statusRows(specCounts, specTotal, [
+          ['approved','Approved'],['review','Review'],['draft','Draft'],['deprecated','Deprecated']
+        ])}
+        <div style="margin-top:14px">
+        <div class="card-title">タスク ステータス</div>
+        ${statusRows(taskCounts, taskTotal, [
+          ['done','Done'],['in_progress','In Progress'],['review','Review'],['pending','Pending']
+        ])}
+        </div>
       </div>
+
       <div class="card">
-        <div class="card-title">タスクステータス内訳</div>
-        ${[['pending','未着手','orange'],['in_progress','進行中','blue'],['review','レビュー中','blue'],['done','完了','green']].map(([k,label,cls]) => `
-          <div style="margin-bottom:10px">
-            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
-              <span>${label}</span><span>${taskCounts[k]}件</span>
+        <div class="card-title">未解決の課題・ブロッカー</div>
+        ${openIssues.length ? openIssues.map(i => `
+          <div class="activity-item">
+            <div class="activity-dot" style="background:${i.priority==='High'?'var(--col-high)':i.priority==='Medium'?'var(--col-medium)':'var(--col-low)'};box-shadow:0 0 4px ${i.priority==='High'?'var(--col-high)':i.priority==='Medium'?'var(--col-medium)':'var(--col-low)'}"></div>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                <span class="badge badge-${h(i.type)}">${h(i.type)}</span>
+                <span style="color:var(--text)">${h(i.title)}</span>
+              </div>
+              <div class="activity-time mt-4">${h(i.id)} · ${fmt(i.createdAt)} · ${h(i.priority||'')}</div>
             </div>
-            <div class="progress-wrap"><div class="progress-bar ${cls}"
-              style="width:${Math.round(((taskCounts[k]||0)/taskTotal)*100)}%;height:8px"></div></div>
-          </div>`).join('')}
+          </div>`).join('') : '<div class="empty-state" style="padding:24px">未解決の課題はありません ✓</div>'}
       </div>
     </div>
 
-    <div class="grid-2 section-gap">
-      <div class="card">
-        <div class="card-title">未解決の課題・ブロッカー（最新5件）</div>
-        ${openIssues.length ? openIssues.map(i => `
-          <div class="activity-item">
-            <div class="activity-dot" style="background:${i.priority==='High'?'var(--col-high)':i.priority==='Medium'?'var(--col-medium)':'var(--col-low)'}"></div>
-            <div>
-              <div><span class="badge badge-${i.type}" style="margin-right:6px">${i.type}</span>${h(i.title)}</div>
-              <div class="text-muted text-sm">${i.id} · ${fmt(i.createdAt)}</div>
-            </div>
-          </div>`).join('') : '<div class="empty-state">未解決の課題はありません</div>'}
-      </div>
-      <div class="card">
-        <div class="card-title">直近のアクティビティ</div>
+    <!-- Activity -->
+    <div class="card section-gap">
+      <div class="card-title">アクティビティ</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0 24px">
         ${activity.length ? activity.map(a => `
           <div class="activity-item">
             <div class="activity-dot"></div>
-            <div>
-              <div>${h(a.text)}</div>
-              <div class="text-muted text-sm">${fmtDT(a.timestamp)} · ${h(a.user)}</div>
+            <div style="flex:1;min-width:0">
+              <div class="activity-text">${h(a.text)}</div>
+              <div class="activity-time">${fmtDT(a.timestamp)} · ${h(a.user)}</div>
             </div>
-          </div>`).join('') : '<div class="empty-state">アクティビティがありません</div>'}
+          </div>`).join('') : '<div class="empty-state" style="padding:16px;grid-column:span 2">アクティビティがありません</div>'}
       </div>
     </div>`;
 }
