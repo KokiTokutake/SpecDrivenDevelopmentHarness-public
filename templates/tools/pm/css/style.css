@@ -599,7 +599,7 @@ tr:hover td { background: var(--bg-hover); }
   align-items: start;
 }
 .kanban-col {
-  background: #E8EFF6;
+  background: #D4DFE9;
   border-radius: 10px;
   padding: 0 0 12px;
   min-height: 240px;
