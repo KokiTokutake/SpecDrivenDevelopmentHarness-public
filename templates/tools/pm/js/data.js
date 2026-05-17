@@ -7,11 +7,13 @@
 
 window.SDD = window.SDD || {};
 
-/* ── STORAGE KEY ── */
+/* ── STORAGE KEY / VERSION ── */
 const STORAGE_KEY = 'sdd-pm-data';
+const DATA_VERSION = 2;
 
 /* ── DEMO SEED DATA ── */
 const SEED_DATA = {
+  _version: DATA_VERSION,
   project: {
     name: 'サンプルプロジェクト',
     description: 'SDD ハーネスで管理するデモプロジェクト',
@@ -34,14 +36,14 @@ const SEED_DATA = {
         'Given 誤ったパスワード When ログインボタン押下 Then エラーメッセージを表示する',
         'Given 5回連続失敗 When ログイン試行 Then 30分アカウントロックされる'
       ],
-      taskIds: ['TASK-001', 'TASK-002'],
+      taskIds: ['TASK-001', 'TASK-002', 'TASK-004'],
       createdAt: '2024-01-01',
       updatedAt: '2024-01-10'
     },
     {
       id: 'SPEC-DASH-001',
       title: 'ダッシュボード表示',
-      status: 'review',
+      status: 'approved',
       category: 'UI',
       priority: 'Must',
       owner: '@bob',
@@ -51,14 +53,14 @@ const SEED_DATA = {
         'Given ログイン済みユーザー When ダッシュボードにアクセス Then KPI カードが表示される',
         'Given アクティビティ When 10件以上存在する Then 最新10件のみ表示する'
       ],
-      taskIds: ['TASK-003'],
+      taskIds: ['TASK-003', 'TASK-005'],
       createdAt: '2024-01-05',
-      updatedAt: '2024-01-12'
+      updatedAt: '2024-01-22'
     },
     {
       id: 'SPEC-NOTIF-001',
       title: 'プッシュ通知',
-      status: 'draft',
+      status: 'review',
       category: 'INFRA',
       priority: 'Could',
       owner: '@carol',
@@ -69,7 +71,41 @@ const SEED_DATA = {
       ],
       taskIds: [],
       createdAt: '2024-01-12',
-      updatedAt: '2024-01-12'
+      updatedAt: '2024-01-24'
+    },
+    {
+      id: 'SPEC-PROF-001',
+      title: 'ユーザープロフィール編集',
+      status: 'approved',
+      category: 'USER',
+      priority: 'Should',
+      owner: '@bob',
+      file: 'docs/spec/user/spec-prof-001-profile.md',
+      description: 'アバター・表示名・メールアドレスの変更機能。',
+      acceptanceCriteria: [
+        'Given ログイン済みユーザー When プロフィールページへ遷移 Then 現在の情報が表示される',
+        'Given 有効な入力 When 保存ボタン押下 Then 変更が即時反映される',
+        'Given 不正なメール形式 When 保存ボタン押下 Then バリデーションエラーを表示する'
+      ],
+      taskIds: ['TASK-006', 'TASK-007'],
+      createdAt: '2024-01-22',
+      updatedAt: '2024-01-25'
+    },
+    {
+      id: 'SPEC-SEARCH-001',
+      title: 'グローバル検索',
+      status: 'draft',
+      category: 'UI',
+      priority: 'Should',
+      owner: '@alice',
+      file: 'docs/spec/ui/spec-search-001-global-search.md',
+      description: 'ユーザー・タスク・ドキュメントを横断検索する機能。',
+      acceptanceCriteria: [
+        'Given 検索キーワード When 3文字以上入力 Then リアルタイムサジェストを表示する'
+      ],
+      taskIds: ['TASK-008'],
+      createdAt: '2024-01-26',
+      updatedAt: '2024-01-26'
     }
   ],
   tasks: [
@@ -109,14 +145,14 @@ const SEED_DATA = {
       specId: 'SPEC-DASH-001',
       sprintId: 'SPRINT-001',
       assignee: '@carol',
-      status: 'in_progress',
+      status: 'done',
       sp: 5,
       issueNumber: 14,
       branch: 'feat/14-dashboard',
-      pr: null,
-      notes: 'グラフライブラリ検討中',
+      pr: 18,
+      notes: 'Chart.js を採用',
       createdAt: '2024-01-10',
-      updatedAt: '2024-01-17'
+      updatedAt: '2024-01-19'
     },
     {
       id: 'TASK-004',
@@ -124,7 +160,7 @@ const SEED_DATA = {
       specId: 'SPEC-AUTH-001',
       sprintId: 'SPRINT-001',
       assignee: '@alice',
-      status: 'review',
+      status: 'done',
       sp: 1,
       issueNumber: 15,
       branch: 'feat/15-logout',
@@ -139,14 +175,59 @@ const SEED_DATA = {
       specId: 'SPEC-DASH-001',
       sprintId: 'SPRINT-001',
       assignee: '@bob',
-      status: 'pending',
+      status: 'done',
       sp: 3,
       issueNumber: 17,
-      branch: '',
-      pr: null,
+      branch: 'feat/17-dashboard-api',
+      pr: 19,
       notes: '',
       createdAt: '2024-01-16',
-      updatedAt: '2024-01-16'
+      updatedAt: '2024-01-19'
+    },
+    {
+      id: 'TASK-006',
+      title: 'プロフィール編集 UI',
+      specId: 'SPEC-PROF-001',
+      sprintId: 'SPRINT-002',
+      assignee: '@bob',
+      status: 'in_progress',
+      sp: 3,
+      issueNumber: 20,
+      branch: 'feat/20-profile-ui',
+      pr: null,
+      notes: 'アバターアップロードのUIデザイン検討中',
+      createdAt: '2024-01-22',
+      updatedAt: '2024-01-27'
+    },
+    {
+      id: 'TASK-007',
+      title: 'プロフィール更新 API',
+      specId: 'SPEC-PROF-001',
+      sprintId: 'SPRINT-002',
+      assignee: '@alice',
+      status: 'review',
+      sp: 2,
+      issueNumber: 21,
+      branch: 'feat/21-profile-api',
+      pr: 22,
+      notes: '',
+      createdAt: '2024-01-22',
+      updatedAt: '2024-01-28'
+    },
+    {
+      id: 'TASK-008',
+      title: 'グローバル検索 プロトタイプ',
+      specId: 'SPEC-SEARCH-001',
+      sprintId: 'SPRINT-002',
+      assignee: '@carol',
+      status: 'pending',
+      sp: 5,
+      issueNumber: 23,
+      branch: '',
+      pr: null,
+      notes: '仕様書レビュー完了次第着手',
+      createdAt: '2024-01-26',
+      updatedAt: '2024-01-26'
     }
   ],
   sprints: [
@@ -156,12 +237,58 @@ const SEED_DATA = {
       goal: 'ログイン機能とダッシュボード基盤の完成',
       startDate: '2024-01-08',
       endDate: '2024-01-19',
-      status: 'active',
+      status: 'completed',
       taskIds: ['TASK-001', 'TASK-002', 'TASK-003', 'TASK-004', 'TASK-005'],
+      retroId: 'RETRO-001'
+    },
+    {
+      id: 'SPRINT-002',
+      name: 'Sprint 2',
+      goal: 'プロフィール編集機能リリースとグローバル検索の仕様確定',
+      startDate: '2024-01-22',
+      endDate: '2024-02-02',
+      status: 'active',
+      taskIds: ['TASK-006', 'TASK-007', 'TASK-008'],
       retroId: null
     }
   ],
-  retros: [],
+  retros: [
+    {
+      id: 'RETRO-001',
+      sprintId: 'SPRINT-001',
+      date: '2024-01-20',
+      facilitator: '@alice',
+      participants: ['@alice', '@bob', '@carol'],
+      keeps: [
+        'スプリント開始前に仕様書を全員でレビューしたことで、認識齟齬がゼロだった',
+        'PR レビューを 24 時間以内に実施できた（平均 18 分）',
+        '毎日のスタンドアップが 15 分以内に収まった'
+      ],
+      problems: [
+        'TASK-003 のグラフライブラリ選定が遅れ、後半に集中した',
+        'Safari バグ（ISSUE-001）の発覚が遅く、SP 内で解消できなかった',
+        'ダッシュボード仕様の KPI 定義が曖昧で途中で確認が必要だった（ISSUE-002）'
+      ],
+      tries: [
+        'スプリント計画時に「技術的不確実性」タスクを先に洗い出し、スパイクを設ける',
+        '仕様書の受入基準に「ブラウザ互換性」を必ず明記するルールを追加する',
+        'KPI 定義など数値系の仕様は承認前に PO がレビューするフローを作る'
+      ],
+      metrics: {
+        completedSP: 11,
+        plannedSP: 14,
+        bugCount: 1,
+        avgReviewMinutes: 18,
+        specFirstRate: 100,
+        ciPassRate: 92
+      },
+      actionItems: [
+        { id: 'AI-001', text: '仕様書テンプレートに「ブラウザ互換性」セクションを追加する', owner: '@alice', dueDate: '2024-01-24', done: true },
+        { id: 'AI-002', text: 'ISSUE-001（Safari バグ）を SPRINT-002 に持ち越してクローズする', owner: '@alice', dueDate: '2024-01-26', done: false },
+        { id: 'AI-003', text: 'スプリント計画にスパイクタスク枠（1 SP）を設ける運用ルール策定', owner: '@bob', dueDate: '2024-01-24', done: true }
+      ]
+    }
+  ],
   issues: [
     {
       id: 'ISSUE-001',
@@ -193,15 +320,25 @@ const SEED_DATA = {
     }
   ],
   activityLog: [
-    { timestamp: '2024-01-16T15:30:00', type: 'issue_created',  text: 'ISSUE-002 を作成しました', user: '@carol' },
-    { timestamp: '2024-01-16T10:00:00', type: 'task_created',   text: 'TASK-005 を作成しました',  user: '@bob' },
-    { timestamp: '2024-01-15T14:00:00', type: 'issue_created',  text: 'ISSUE-001 を作成しました', user: '@alice' },
-    { timestamp: '2024-01-15T09:00:00', type: 'task_updated',   text: 'TASK-004 を review に移動しました', user: '@alice' },
-    { timestamp: '2024-01-12T11:00:00', type: 'spec_updated',   text: 'SPEC-DASH-001 を review に更新しました', user: '@bob' },
-    { timestamp: '2024-01-10T09:00:00', type: 'task_created',   text: 'TASK-003 を作成しました',  user: '@carol' },
-    { timestamp: '2024-01-08T09:00:00', type: 'sprint_started', text: 'SPRINT-001 を開始しました', user: '@alice' },
-    { timestamp: '2024-01-05T10:00:00', type: 'spec_created',   text: 'SPEC-DASH-001 を作成しました', user: '@bob' },
-    { timestamp: '2024-01-01T09:00:00', type: 'spec_created',   text: 'SPEC-AUTH-001 を作成しました', user: '@alice' }
+    { timestamp: '2024-01-28T11:00:00', type: 'task_updated',    text: 'TASK-007 を review に移動しました', user: '@alice' },
+    { timestamp: '2024-01-27T14:30:00', type: 'issue_created',   text: 'ISSUE-002 を in_progress に更新しました', user: '@bob' },
+    { timestamp: '2024-01-26T10:00:00', type: 'spec_created',    text: 'SPEC-SEARCH-001 を作成しました', user: '@alice' },
+    { timestamp: '2024-01-26T09:00:00', type: 'task_created',    text: 'TASK-008 を作成しました', user: '@carol' },
+    { timestamp: '2024-01-22T09:00:00', type: 'sprint_started',  text: 'SPRINT-002 を開始しました', user: '@alice' },
+    { timestamp: '2024-01-22T09:00:00', type: 'spec_created',    text: 'SPEC-PROF-001 を作成しました', user: '@bob' },
+    { timestamp: '2024-01-20T15:00:00', type: 'retro_created',   text: 'RETRO-001（Sprint 1 ふりかえり）を作成しました', user: '@alice' },
+    { timestamp: '2024-01-19T17:00:00', type: 'sprint_completed', text: 'SPRINT-001 を完了しました（11 / 14 SP）', user: '@alice' },
+    { timestamp: '2024-01-19T16:00:00', type: 'task_updated',    text: 'TASK-005 を done に移動しました', user: '@bob' },
+    { timestamp: '2024-01-19T15:00:00', type: 'task_updated',    text: 'TASK-003 を done に移動しました', user: '@carol' },
+    { timestamp: '2024-01-16T15:30:00', type: 'issue_created',   text: 'ISSUE-002 を作成しました', user: '@carol' },
+    { timestamp: '2024-01-16T10:00:00', type: 'task_created',    text: 'TASK-005 を作成しました', user: '@bob' },
+    { timestamp: '2024-01-15T14:00:00', type: 'issue_created',   text: 'ISSUE-001 を作成しました', user: '@alice' },
+    { timestamp: '2024-01-15T09:00:00', type: 'task_updated',    text: 'TASK-004 を review に移動しました', user: '@alice' },
+    { timestamp: '2024-01-12T11:00:00', type: 'spec_updated',    text: 'SPEC-DASH-001 を review に更新しました', user: '@bob' },
+    { timestamp: '2024-01-10T09:00:00', type: 'task_created',    text: 'TASK-003 を作成しました', user: '@carol' },
+    { timestamp: '2024-01-08T09:00:00', type: 'sprint_started',  text: 'SPRINT-001 を開始しました', user: '@alice' },
+    { timestamp: '2024-01-05T10:00:00', type: 'spec_created',    text: 'SPEC-DASH-001 を作成しました', user: '@bob' },
+    { timestamp: '2024-01-01T09:00:00', type: 'spec_created',    text: 'SPEC-AUTH-001 を作成しました', user: '@alice' }
   ]
 };
 
@@ -213,11 +350,17 @@ window.SDD.store = {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        this.data = JSON.parse(raw);
+        const parsed = JSON.parse(raw);
+        if ((parsed._version || 0) < DATA_VERSION) {
+          console.info(`SDD: data version ${parsed._version||0} → ${DATA_VERSION}, resetting to seed.`);
+          this.data = JSON.parse(JSON.stringify(SEED_DATA));
+        } else {
+          this.data = parsed;
+        }
       } else {
         this.data = JSON.parse(JSON.stringify(SEED_DATA));
-        this.save();
       }
+      this.save();
     } catch(e) {
       console.warn('SDD: localStorage parse error, resetting.', e);
       this.data = JSON.parse(JSON.stringify(SEED_DATA));
@@ -235,6 +378,7 @@ window.SDD.store = {
 
   reset() {
     this.data = JSON.parse(JSON.stringify(SEED_DATA));
+    this.data._version = DATA_VERSION;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
     if (window.SDD && window.SDD.fs && window.SDD.fs.dirHandle) {
       window.SDD.fs.autoSync().catch(() => {});
