@@ -639,15 +639,15 @@ tr:hover td { background: var(--bg-hover); }
   font-family: 'JetBrains Mono', monospace;
 }
 .kanban-card {
-  background: var(--bg-card-2);
+  background: #F4F7FA;
   border-radius: 8px;
   padding: 11px 12px;
   margin-bottom: 7px;
-  border: 1px solid var(--border);
+  border: 1px solid #DDE6EF;
   cursor: grab;
   transition: border-color .12s, box-shadow .12s, opacity .15s, transform .1s;
   user-select: none;
-  border-left: 2px solid transparent;
+  border-left: 4px solid transparent;
 }
 .kanban-col[data-status="pending"]     .kanban-card { border-left-color: #E8A000; }
 .kanban-col[data-status="in_progress"] .kanban-card { border-left-color: #1E88E5; }
