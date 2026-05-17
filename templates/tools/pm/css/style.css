@@ -599,7 +599,7 @@ tr:hover td { background: var(--bg-hover); }
   align-items: start;
 }
 .kanban-col {
-  background: var(--bg-card);
+  background: #E8EFF6;
   border-radius: 10px;
   padding: 0 0 12px;
   min-height: 240px;
@@ -639,7 +639,7 @@ tr:hover td { background: var(--bg-hover); }
   font-family: 'JetBrains Mono', monospace;
 }
 .kanban-card {
-  background: #F4F7FA;
+  background: #FFFFFF;
   border-radius: 8px;
   padding: 11px 12px;
   margin-bottom: 7px;
