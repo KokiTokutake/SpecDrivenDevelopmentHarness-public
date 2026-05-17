@@ -673,28 +673,83 @@ body {
   <section class="section">
     <h2 class="section-title">よく使うコマンド早見表</h2>
     <div class="grid2">
-      <div class="card card-pad">
-        <div class="section-subtitle">開発サイクル</div>
-        <div style="font-size:12px; line-height:2.2; font-family:'Courier New',monospace;">
-          <div><span class="skill phase2">/spec-write</span> → <span class="skill phase2">/spec-review</span> → approved</div>
-          <div><span class="skill phase3">/design-create</span> → <span class="skill phase3">/design-review</span></div>
-          <div><span class="skill phase4">/tasks-plan</span> → <span class="skill phase4">/task-board</span></div>
-          <div><span class="skill phase5">/task-start</span> → <span class="skill phase5">/impl-guide</span> → <span class="skill phase5">/impl-check</span></div>
-          <div><span class="skill phase6">/test-write</span> → <span class="skill phase6">/test-run</span> → <span class="skill phase6">/test-report</span></div>
-          <div><span class="skill phase7">/accept-run</span> → <span class="skill phase5">/task-done</span> → <span class="skill pm">/release-prep</span></div>
-        </div>
+      <div class="card">
+        <div style="background:var(--indigo); color:#fff; padding:9px 14px; font-weight:700; font-size:12px;">開発サイクル</div>
+        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+          <thead>
+            <tr>
+              <th style="background:#E8EAF6; color:var(--indigo); padding:7px 12px; text-align:left; font-size:11px; width:110px;">場面</th>
+              <th style="background:#E8EAF6; color:var(--indigo); padding:7px 12px; text-align:left; font-size:11px;">スキルの流れ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:8px 12px; border-bottom:1px solid #ECEFF1; color:var(--muted); font-weight:600;">要件定義</td>
+              <td style="padding:8px 12px; border-bottom:1px solid #ECEFF1;"><span class="skill phase2">/spec-write</span> → <span class="skill phase2">/spec-review</span> → <span style="font-size:11px; color:var(--green-m); font-weight:700;">approved</span></td>
+            </tr>
+            <tr>
+              <td style="padding:8px 12px; border-bottom:1px solid #ECEFF1; color:var(--muted); font-weight:600;">設計</td>
+              <td style="padding:8px 12px; border-bottom:1px solid #ECEFF1;"><span class="skill phase3">/design-create</span> → <span class="skill phase3">/design-review</span></td>
+            </tr>
+            <tr>
+              <td style="padding:8px 12px; border-bottom:1px solid #ECEFF1; color:var(--muted); font-weight:600;">タスク管理</td>
+              <td style="padding:8px 12px; border-bottom:1px solid #ECEFF1;"><span class="skill phase4">/tasks-plan</span> → <span class="skill phase4">/task-board</span></td>
+            </tr>
+            <tr>
+              <td style="padding:8px 12px; border-bottom:1px solid #ECEFF1; color:var(--muted); font-weight:600;">実装</td>
+              <td style="padding:8px 12px; border-bottom:1px solid #ECEFF1;"><span class="skill phase5">/task-start</span> → <span class="skill phase5">/impl-guide</span> → <span class="skill phase5">/impl-check</span></td>
+            </tr>
+            <tr>
+              <td style="padding:8px 12px; border-bottom:1px solid #ECEFF1; color:var(--muted); font-weight:600;">テスト</td>
+              <td style="padding:8px 12px; border-bottom:1px solid #ECEFF1;"><span class="skill phase6">/test-write</span> → <span class="skill phase6">/test-run</span> → <span class="skill phase6">/test-report</span></td>
+            </tr>
+            <tr>
+              <td style="padding:8px 12px; color:var(--muted); font-weight:600;">リリース</td>
+              <td style="padding:8px 12px;"><span class="skill phase7">/accept-run</span> → <span class="skill phase5">/task-done</span> → <span class="skill pm">/release-prep</span></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <div class="card card-pad">
-        <div class="section-subtitle">よくある状況</div>
-        <div style="font-size:12px; line-height:2.2;">
-          <div>初回導入:          <span class="skill setup">/sdd-start</span></div>
-          <div>仕様変更が必要:    <span class="skill phase2">/spec-change</span></div>
-          <div>スプリント管理:    <span class="skill pm" style="background:#00695C;">/sprint-start</span> → <span class="skill pm" style="background:#00695C;">/sprint-end</span></div>
-          <div>問題が起きた:      <span class="skill pm">/incident-handle</span></div>
-          <div>振り返り:          <span class="skill pm">/retro-run</span></div>
-          <div>学習・改善:        <span class="skill learn">/review-learn</span> → <span class="skill learn">/review-patterns</span></div>
-          <div>迷ったとき:        <span class="skill setup">/sdd-health</span></div>
-        </div>
+      <div class="card">
+        <div style="background:#37474F; color:#fff; padding:9px 14px; font-weight:700; font-size:12px;">よくある状況</div>
+        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+          <thead>
+            <tr>
+              <th style="background:#ECEFF1; color:#37474F; padding:7px 12px; text-align:left; font-size:11px; width:140px;">状況</th>
+              <th style="background:#ECEFF1; color:#37474F; padding:7px 12px; text-align:left; font-size:11px;">使うスキル</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:8px 12px; border-bottom:1px solid #ECEFF1; color:var(--muted); font-weight:600;">初回導入</td>
+              <td style="padding:8px 12px; border-bottom:1px solid #ECEFF1;"><span class="skill setup">/sdd-start</span></td>
+            </tr>
+            <tr>
+              <td style="padding:8px 12px; border-bottom:1px solid #ECEFF1; color:var(--muted); font-weight:600;">仕様変更が必要</td>
+              <td style="padding:8px 12px; border-bottom:1px solid #ECEFF1;"><span class="skill phase2">/spec-change</span></td>
+            </tr>
+            <tr>
+              <td style="padding:8px 12px; border-bottom:1px solid #ECEFF1; color:var(--muted); font-weight:600;">スプリント管理</td>
+              <td style="padding:8px 12px; border-bottom:1px solid #ECEFF1;"><span class="skill pm" style="background:#00695C;">/sprint-start</span> → <span class="skill pm" style="background:#00695C;">/sprint-end</span></td>
+            </tr>
+            <tr>
+              <td style="padding:8px 12px; border-bottom:1px solid #ECEFF1; color:var(--muted); font-weight:600;">問題が起きた</td>
+              <td style="padding:8px 12px; border-bottom:1px solid #ECEFF1;"><span class="skill pm">/incident-handle</span></td>
+            </tr>
+            <tr>
+              <td style="padding:8px 12px; border-bottom:1px solid #ECEFF1; color:var(--muted); font-weight:600;">振り返り</td>
+              <td style="padding:8px 12px; border-bottom:1px solid #ECEFF1;"><span class="skill pm">/retro-run</span></td>
+            </tr>
+            <tr>
+              <td style="padding:8px 12px; border-bottom:1px solid #ECEFF1; color:var(--muted); font-weight:600;">学習・改善</td>
+              <td style="padding:8px 12px; border-bottom:1px solid #ECEFF1;"><span class="skill learn">/review-learn</span> → <span class="skill learn">/review-patterns</span></td>
+            </tr>
+            <tr>
+              <td style="padding:8px 12px; color:var(--muted); font-weight:600;">迷ったとき</td>
+              <td style="padding:8px 12px;"><span class="skill setup">/sdd-health</span></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </section>
