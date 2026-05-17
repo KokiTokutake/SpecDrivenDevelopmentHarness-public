@@ -619,14 +619,19 @@ tr:hover td { background: var(--bg-hover); }
   border-bottom: 1px solid var(--border);
   margin-bottom: 10px;
 }
-.kanban-col[data-status="pending"]     .kanban-col-header { color: var(--col-draft); }
-.kanban-col[data-status="in_progress"] .kanban-col-header { color: var(--col-review); }
-.kanban-col[data-status="review"]      .kanban-col-header { color: var(--accent-2); }
-.kanban-col[data-status="done"]        .kanban-col-header { color: var(--col-approved); }
+.kanban-col[data-status="pending"]     { border-top: 3px solid #E8A000; }
+.kanban-col[data-status="in_progress"] { border-top: 3px solid #1E88E5; }
+.kanban-col[data-status="review"]      { border-top: 3px solid #7B1FA2; }
+.kanban-col[data-status="done"]        { border-top: 3px solid #43A047; }
+
+.kanban-col[data-status="pending"]     .kanban-col-header { background: #FFF8E1; color: #C67B00; border-bottom-color: #FFE082; }
+.kanban-col[data-status="in_progress"] .kanban-col-header { background: #E3F2FD; color: #1565C0; border-bottom-color: #90CAF9; }
+.kanban-col[data-status="review"]      .kanban-col-header { background: #F3E5F5; color: #6A1B9A; border-bottom-color: #CE93D8; }
+.kanban-col[data-status="done"]        .kanban-col-header { background: #E8F5E9; color: #2E7D32; border-bottom-color: #A5D6A7; }
 .kanban-col-body { padding: 0 10px; }
 .kanban-col-header .col-count {
-  background: var(--bg-sidebar);
-  border: 1px solid var(--border);
+  background: rgba(0,0,0,.08);
+  border: none;
   border-radius: 99px;
   padding: 0px 7px;
   font-size: 10px;
@@ -644,10 +649,10 @@ tr:hover td { background: var(--bg-hover); }
   user-select: none;
   border-left: 2px solid transparent;
 }
-.kanban-col[data-status="pending"]     .kanban-card { border-left-color: var(--col-draft); }
-.kanban-col[data-status="in_progress"] .kanban-card { border-left-color: var(--col-review); }
-.kanban-col[data-status="review"]      .kanban-card { border-left-color: var(--accent-2); }
-.kanban-col[data-status="done"]        .kanban-card { border-left-color: var(--col-approved); opacity: .7; }
+.kanban-col[data-status="pending"]     .kanban-card { border-left-color: #E8A000; }
+.kanban-col[data-status="in_progress"] .kanban-card { border-left-color: #1E88E5; }
+.kanban-col[data-status="review"]      .kanban-card { border-left-color: #7B1FA2; }
+.kanban-col[data-status="done"]        .kanban-card { border-left-color: #43A047; opacity: .75; }
 .kanban-card:hover { border-color: var(--border-bright); box-shadow: 0 4px 16px rgba(0,0,0,.3); }
 .kanban-card.dragging { opacity: .35; cursor: grabbing; transform: scale(.97); }
 .kanban-col.drag-over { background: rgba(137,180,250,.05); border-color: var(--border-bright); }
