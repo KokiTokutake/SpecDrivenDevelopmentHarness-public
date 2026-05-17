@@ -185,13 +185,34 @@ body {
 /* ── CHECKLIST ── */
 .checklist { list-style: none; }
 .checklist li {
-  padding: 5px 0 5px 24px; position: relative;
-  font-size: 12px; border-bottom: 1px solid #ECEFF1;
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 7px 0; font-size: 12px; border-bottom: 1px solid #ECEFF1;
+  cursor: pointer; transition: background .1s;
+  border-radius: 4px; padding-left: 4px; padding-right: 4px;
 }
 .checklist li:last-child { border-bottom: none; }
-.checklist li::before {
-  content: '☐'; position: absolute; left: 0; color: #90A4AE; font-size: 13px;
+.checklist li:hover { background: #F5F5F5; }
+.checklist li input[type="checkbox"] {
+  margin-top: 1px; flex-shrink: 0;
+  width: 15px; height: 15px; cursor: pointer;
+  accent-color: var(--green-m);
 }
+.checklist li.checked .item-text {
+  text-decoration: line-through; color: #90A4AE;
+}
+.checklist li .item-text { flex: 1; line-height: 1.5; }
+.checklist-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.checklist-progress {
+  font-size: 11px; font-weight: 700; color: var(--green-m);
+}
+.checklist-reset {
+  font-size: 10px; color: var(--muted); background: none; border: 1px solid var(--border);
+  border-radius: 4px; padding: 2px 8px; cursor: pointer;
+}
+.checklist-reset:hover { background: #ECEFF1; }
 
 /* ── DIRECTORY TREE ── */
 .dir-tree {
@@ -759,25 +780,37 @@ body {
     <h2 class="section-title">導入チェックリスト</h2>
     <div class="grid2">
       <div class="card card-pad">
-        <div class="section-subtitle">初日（Day 1）</div>
-        <ul class="checklist">
-          <li>ハーネスをプロジェクトにコピー完了</li>
-          <li><code class="code-inline">chmod +x .claude/hooks/*.sh</code> 実行済み</li>
-          <li><code class="code-inline">/sdd-start</code> でウィザード完了</li>
-          <li><code class="code-inline">Constitution.md</code> の内容をチーム全員が確認</li>
-          <li>GitHub Branch Protection 設定済み</li>
-          <li>PM ツールが開けることを確認</li>
+        <div class="checklist-header">
+          <div class="section-subtitle" style="margin:0;">初日（Day 1）</div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="checklist-progress" id="prog-day1">0 / 6</span>
+            <button class="checklist-reset" onclick="resetList('day1')">リセット</button>
+          </div>
+        </div>
+        <ul class="checklist" id="list-day1">
+          <li data-id="day1-0"><input type="checkbox"><span class="item-text">ハーネスをプロジェクトにコピー完了</span></li>
+          <li data-id="day1-1"><input type="checkbox"><span class="item-text"><code class="code-inline">chmod +x .claude/hooks/*.sh</code> 実行済み</span></li>
+          <li data-id="day1-2"><input type="checkbox"><span class="item-text"><code class="code-inline">/sdd-start</code> でウィザード完了</span></li>
+          <li data-id="day1-3"><input type="checkbox"><span class="item-text"><code class="code-inline">Constitution.md</code> の内容をチーム全員が確認</span></li>
+          <li data-id="day1-4"><input type="checkbox"><span class="item-text">GitHub Branch Protection 設定済み</span></li>
+          <li data-id="day1-5"><input type="checkbox"><span class="item-text">PM ツールが開けることを確認</span></li>
         </ul>
       </div>
       <div class="card card-pad">
-        <div class="section-subtitle">第1スプリント開始前</div>
-        <ul class="checklist">
-          <li>最初の機能の <code class="code-inline">/spec-write</code> 完了・approved</li>
-          <li><code class="code-inline">/design-create</code> → <code class="code-inline">/design-review</code> 完了（80点以上）</li>
-          <li><code class="code-inline">/tasks-plan</code> でタスク分割完了</li>
-          <li><code class="code-inline">/sprint-start</code> でスプリントゴール設定</li>
-          <li>チームに <code class="code-inline">/sdd-skills</code> のスキル一覧を共有</li>
-          <li>Playwright インストール完了（<code class="code-inline">npx playwright install</code>）</li>
+        <div class="checklist-header">
+          <div class="section-subtitle" style="margin:0;">第1スプリント開始前</div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="checklist-progress" id="prog-sprint1">0 / 6</span>
+            <button class="checklist-reset" onclick="resetList('sprint1')">リセット</button>
+          </div>
+        </div>
+        <ul class="checklist" id="list-sprint1">
+          <li data-id="sprint1-0"><input type="checkbox"><span class="item-text">最初の機能の <code class="code-inline">/spec-write</code> 完了・approved</span></li>
+          <li data-id="sprint1-1"><input type="checkbox"><span class="item-text"><code class="code-inline">/design-create</code> → <code class="code-inline">/design-review</code> 完了（80点以上）</span></li>
+          <li data-id="sprint1-2"><input type="checkbox"><span class="item-text"><code class="code-inline">/tasks-plan</code> でタスク分割完了</span></li>
+          <li data-id="sprint1-3"><input type="checkbox"><span class="item-text"><code class="code-inline">/sprint-start</code> でスプリントゴール設定</span></li>
+          <li data-id="sprint1-4"><input type="checkbox"><span class="item-text">チームに <code class="code-inline">/sdd-skills</code> のスキル一覧を共有</span></li>
+          <li data-id="sprint1-5"><input type="checkbox"><span class="item-text">Playwright インストール完了（<code class="code-inline">npx playwright install</code>）</span></li>
         </ul>
       </div>
     </div>
@@ -794,5 +827,61 @@ body {
   SDD ハーネス — 仕様駆動開発 実践入門 | 31スキル | Claude Code 対応
 </footer>
 
+<script>
+const STORAGE_KEY = 'sdd-quickstart-checklist';
+
+function loadState() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { return {}; }
+}
+function saveState(state) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function updateProgress(listId) {
+  const items = document.querySelectorAll(`#list-${listId} li`);
+  const checked = document.querySelectorAll(`#list-${listId} li.checked`).length;
+  const prog = document.getElementById(`prog-${listId}`);
+  if (!prog) return;
+  prog.textContent = `${checked} / ${items.length}`;
+  prog.style.color = checked === items.length ? 'var(--green-m)' : 'var(--muted)';
+}
+
+function initChecklist(listId) {
+  const state = loadState();
+  const items = document.querySelectorAll(`#list-${listId} li`);
+  items.forEach(li => {
+    const id = li.dataset.id;
+    const cb = li.querySelector('input[type="checkbox"]');
+    if (state[id]) { li.classList.add('checked'); cb.checked = true; }
+
+    li.addEventListener('click', e => {
+      if (e.target.tagName === 'A') return;
+      cb.checked = !cb.checked;
+      li.classList.toggle('checked', cb.checked);
+      const s = loadState();
+      s[id] = cb.checked;
+      saveState(s);
+      updateProgress(listId);
+    });
+  });
+  updateProgress(listId);
+}
+
+function resetList(listId) {
+  const state = loadState();
+  document.querySelectorAll(`#list-${listId} li`).forEach(li => {
+    li.classList.remove('checked');
+    li.querySelector('input[type="checkbox"]').checked = false;
+    delete state[li.dataset.id];
+  });
+  saveState(state);
+  updateProgress(listId);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initChecklist('day1');
+  initChecklist('sprint1');
+});
+</script>
 </body>
 </html>
