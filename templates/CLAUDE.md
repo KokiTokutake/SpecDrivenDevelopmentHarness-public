@@ -25,9 +25,11 @@ This file provides guidance to Claude Code when working with code in this reposi
 ### 必須の実行順序（この順序を変えてはならない）
 
 ```
-/design-create [SPEC-ID]   ← 設計書を作成（task-start の前に必須）
+/design-create [SPEC-ID]   ← 設計書を draft で作成（task-start の前に必須）
         ↓
-/task-start [TASK-ID]      ← 設計書が存在しなければ停止する
+   設計書レビュー・承認      ← /design-create STEP 5 で approved にする（必須ゲート）
+        ↓
+/task-start [TASK-ID]      ← 設計書が存在しない or approved でなければ停止する
         ↓
    コーディング（実装）
         ↓
@@ -43,7 +45,9 @@ This file provides guidance to Claude Code when working with code in this reposi
 1. **`/design-create [SPEC-ID]` — 設計書の作成（スキップ禁止）**
    - 出力先: `docs/design/[SPEC-ID]-design.md`
    - エンティティ設計・API設計・FEコンポーネント設計・data-testid定義を含むこと
-   - `/task-start` は `docs/design/[SPEC-ID]-design.md` の存在を確認し、なければ停止する
+   - 設計書は **`draft`** で生成される。`approved` で生成してはならない
+   - STEP 5 の整合性レポートを経てユーザーが「承認する」と言った場合のみ `approved` に更新する
+   - `/task-start` は設計書の **存在** と **`| ステータス | approved |`** を両方確認し、どちらかが満たされなければ停止する
 
 2. **`/task-start [TASK-ID]` — タスク開始・ブランチ作成（スキップ禁止）**
    - このスキルを経由しない実装開始は禁止
