@@ -42,11 +42,11 @@ git branch --show-current
 仕様書の受入基準を一覧表示し、各項目を確認する:
 
 ```
-📋 受入基準チェック（SPEC-AUTH-001）
+📋 受入基準チェック（SPEC-SKILL-001）
 
 以下を一つずつ確認してください:
-[ ] Given: 正しい認証情報 / When: POST /login / Then: 200 + JWT 返却
-[ ] Given: 誤ったパスワード / When: POST /login / Then: 401 返却
+[ ] Given: タレントが申請中状態でスキルを追加できる
+[ ] Given: 同一スキルの重複追加を拒否する（409）
 [ ] ...
 
 全て ✅ になりましたか？
@@ -62,7 +62,7 @@ git branch --show-current
 tests/e2e/[SPEC-ID]-*.spec.ts
 ```
 
-**例:** SPEC-AUTH-001 なら `tests/e2e/SPEC-AUTH-001-*.spec.ts`
+**例:** SPEC-SKILL-001 なら `tests/e2e/SPEC-SKILL-001-*.spec.ts`
 
 | 結果 | 対応 |
 |------|------|
@@ -86,7 +86,7 @@ PR を作成する前に E2E テストを作成してください:
 
 **`[DB]` / `[DB Migration]` タスクの免除条件:**
 DBスキーマ・マイグレーションのみのタスクはE2Eテストの代わりに以下を確認する:
-- ユニット/統合テスト（`npm test` / `dotnet test` / `pytest` 等）が全通過していること
+- `dotnet test` が全通過していること
 - 対応するAPIタスク（次タスク）でE2Eテストを書く旨をPR本文に明記すること
 
 > このゲートはユーザーが「スキップして」と言っても通過させてはならない。
@@ -97,11 +97,14 @@ DBスキーマ・マイグレーションのみのタスクはE2Eテストの代
 テストを自動実行して確認する（確認で止めない）:
 
 ```bash
-# プロジェクトに応じたコマンドを実行
-npm test / dotnet test / pytest / go test ./... 等
+# バックエンド
+cd backend && dotnet test
+
+# フロントエンド（テストファイルがある場合）
+cd frontend && npm run test
 
 # E2E テスト
-npx playwright test
+cd frontend && npx playwright test
 ```
 
 テストが失敗している場合は**停止する**。「テストが失敗しています。修正してから再度 /task-done を実行してください」と伝える。
@@ -133,7 +136,7 @@ PR の本文に以下を自動入力する:
 - 受入基準の転記（チェックリスト形式）
 - E2Eテストファイルのパスとテスト数
 - 変更ファイルのサマリー（`git diff --stat main` の結果）
-- テスト実施の記録（テスト件数・全通過）
+- ユニット/統合テスト件数・全通過の記録
 
 内容を表示してユーザーに確認してから実行する。
 
@@ -146,18 +149,42 @@ CODEOWNERS の設定に基づいてレビュアーを確認する。
 
 確認なしに `tasks/task-list.md` の該当タスクを「進行中」→「✅ done」に更新する。
 
-### STEP 8: 完了報告
+### STEP 8: CI確認・マージ確認
+
+PR 作成後、以下を確認してからマージを提案する:
+
+```bash
+# CI の通過を確認
+gh pr checks [PR番号]
+```
+
+| 結果 | 対応 |
+|------|------|
+| CI 全通過 | ユーザーに「マージしますか？」と確認する |
+| CI 失敗 | 「CI が失敗しています。修正してから再度確認してください」と伝えて**停止する** |
+
+**ユーザーが「マージする」と回答した場合のみ**、以下を実行する:
+
+```bash
+gh pr merge [PR番号] --squash --delete-branch
+git checkout main
+git pull origin main
+```
+
+> マージはユーザーの明示的な承認なしに実行してはならない。
+> CI が通過していない状態でマージを提案してはならない。
+
+### STEP 9: 完了報告
 
 ```
-✅ PR 作成完了
+✅ マージ完了
 
 PR: https://github.com/[org]/[repo]/pull/[番号]
-ブランチ: feat/T-012-user-skill-api → main
+ブランチ: feat/T-012-user-skill-api → main（スカッシュマージ・削除済み）
 ユニットテスト: 85件 全通過
-E2Eテスト: 6件 全通過（tests/e2e/SPEC-AUTH-001-login.spec.ts）
+E2Eテスト: 6件 全通過（tests/e2e/SPEC-SKILL-001-skill-management.spec.ts）
 
 次のアクション:
-  レビュー承認後に CI が通過したらマージできます
   /task-board でタスクの進捗を確認できます
   次のタスクは /task-start [TASK-ID] で開始してください
 ```
@@ -168,6 +195,7 @@ E2Eテスト: 6件 全通過（tests/e2e/SPEC-AUTH-001-login.spec.ts）
 
 - STEP 0 のゲートはいかなる場合も省略・バイパスしない
 - STEP 2.5 のゲートはいかなる場合も省略・バイパスしない（`[DB]`免除条件を除く）
-- テストが通過していない状態でPRを出さない
+- テストが通過していない状態でPRを出さない・マージを提案しない
 - 受入基準を全て確認してからPRを出す
 - 仕様書に書いていない機能を追加していないか確認する
+- マージは必ずユーザーの承認を得てから実行する
