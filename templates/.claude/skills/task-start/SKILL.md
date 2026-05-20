@@ -56,6 +56,37 @@ git status --short
 - 関連する設計書（`docs/design/`）
 - Constitution.md のコーディングルールセクション
 
+### STEP 2.5: 設計書の存在チェック（必須ゲート）
+
+タスクに紐付く Spec ID に対して、以下のパスに設計書が存在するか確認する:
+
+```
+docs/design/[SPEC-ID]-design.md
+```
+
+**例:** SPEC-AUTH-001 なら `docs/design/SPEC-AUTH-001-design.md`
+
+| 結果 | 対応 |
+|------|------|
+| 設計書が存在する | 正常。STEP 3 へ進む |
+| 設計書が存在しない | **即時停止**。以下のメッセージを表示して終了する |
+
+```
+⛔ 設計書が見つかりません。
+
+  対象仕様書: [SPEC-ID]
+  期待するパス: docs/design/[SPEC-ID]-design.md
+
+実装を開始する前に設計書を作成してください:
+
+  /design-create [SPEC-ID]
+
+設計書が作成されてから、再度 /task-start を実行してください。
+```
+
+> このゲートはユーザーが「スキップして」「続けて」と言っても通過させてはならない。
+> 設計書なしの実装は、何を作るか合意がない状態でコードを書くことを意味する。
+
 ### STEP 3: ブランチの作成（必須・スキップ不可）
 
 GitHub Issue 番号の有無にかかわらず、**必ずブランチを作成する**。
@@ -86,6 +117,9 @@ feat/T-001-login-api（作成済み）
 ### 対応仕様書
 SPEC-AUTH-001: ログイン機能（docs/spec/auth/spec-auth-001-login.md）
 
+### 対応設計書
+docs/design/SPEC-AUTH-001-design.md（確認済み）
+
 ### このタスクで実装すること
 - POST /api/auth/login エンドポイント
 - メールアドレス + パスワードの認証処理
@@ -100,9 +134,6 @@ Given: 誤ったパスワードが入力された
 When:  POST /api/auth/login を実行する
 Then:  HTTP 401 と "認証に失敗しました" メッセージが返る
 
-### 関連する設計
-docs/design/component-design.md → AuthService クラス
-
 ### 注意事項
 - パスワードは bcrypt でハッシュ化すること（Constitution.md: セキュリティ原則）
 - エラーメッセージは仕様書の文言を使用すること
@@ -114,9 +145,14 @@ docs/design/component-design.md → AuthService クラス
 
 ---
 
-## 次のステップ
+## 次のステップ（この順序を必ず守ること）
 
 ```
-/impl-guide → 実装の具体的なガイダンスを取得
-/task-done  → 実装完了後に PR を作成（必須）
+1. コーディング（実装）
+2. /test-write → E2Eテスト生成（必須・スキップ不可）
+3. /test-run   → テスト実行・確認
+4. /task-done  → PR 作成
 ```
+
+> ⛔ `/test-write` をスキップして `/task-done` を実行することはできない。
+> `task-done` はE2Eテストファイルの存在を確認し、なければ停止する。
