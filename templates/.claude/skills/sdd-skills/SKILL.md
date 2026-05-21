@@ -28,6 +28,7 @@ SDD ハーネスで使えるスキルを工程別に一覧表示し、現在の�
 | `/sdd-start` | 新プロジェクトへのSDD導入ウィザード（最初の一回） |
 | `/sdd-health` | SDD遵守状況の健全性チェック（定期実行推奨） |
 | `/sdd-skills` | このスキル一覧を表示 |
+| `/onboard-member` | 既存プロジェクトに新メンバーを追加オンボーディング |
 
 ### 工程1: 原則決定（Constitution）
 | スキル | 使う場面 |
@@ -62,6 +63,8 @@ SDD ハーネスで使えるスキルを工程別に一覧表示し、現在の�
 | `/impl-guide` | 実装ガイダンスを取得する（仕様書・設計書の読み込み） |
 | `/impl-check` | 実装が受入基準を満たしているか確認する（PR前） |
 | `/task-done` | タスク完了・PR作成・レビュー依頼 |
+| `/pr-review` | PRをSDD観点でレビューする（仕様書・設計書・テストとの整合チェック） |
+| `/bug-triage` | バグを分類し修正パスを決定する（実装バグ / 仕様書バグ / 仕様書未定義） |
 
 ### 工程5→6: テスト自動化（Test）
 | スキル | 使う場面 |
@@ -99,7 +102,7 @@ SDD ハーネスで使えるスキルを工程別に一覧表示し、現在の�
 
 ---
 
-合計: 31スキル
+合計: 34スキル
 ```
 
 ### STEP 3: 現在の工程に応じたオススメを表示
@@ -125,9 +128,12 @@ SDD ハーネスで使えるスキルを工程別に一覧表示し、現在の�
 
 ```
 最初の一回:           /sdd-start
+新メンバー追加:       /onboard-member
 仕様書を書く:         /spec-write → /spec-review
 タスクを管理する:     /tasks-plan → /task-start → /task-done
 実装を進める:         /impl-guide → /impl-check
+PR レビュー:          /pr-review
+バグ対応:             /bug-triage → fix/[issue]-[名前] ブランチ
 テスト自動化:         /test-write → /test-run → /test-report
 リリース準備:         /accept-run → /spec-trace → /release-prep
 振り返り:             /retro-run
