@@ -76,26 +76,11 @@ SP 8 のタスクがある場合: 「このタスクは大きすぎます。さ�
 
 確認が取れたら `tasks/task-list.md` を更新する。
 
-### STEP 7: GitHub Issues の一括作成（任意）
-
-```
-GitHub Issues を一括作成しますか？
-（gh CLI が使える場合、各タスクを Issue として登録します）
-```
-
-「はい」の場合:
-```bash
-gh issue create --title "TASK-001: ログイン API エンドポイント実装" \
-  --label "enhancement" \
-  --body "Spec: SPEC-AUTH-001\nSP: 3"
-```
-
 ---
 
 ## 出力ファイル
 
 - `tasks/task-list.md`（更新）
-- GitHub Issues（任意）
 
 ---
 

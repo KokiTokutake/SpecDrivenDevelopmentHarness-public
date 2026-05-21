@@ -39,9 +39,9 @@ PR の概要・変更ファイル・差分を取得する。
 PR タイトル・ブランチ名・変更ファイルから関連する Spec ID を特定する。
 
 ```
-ブランチ名: feat/[issue番号]-[機能名]
-→ gh issue view [issue番号] で Issue を確認
-→ Issue から Spec ID（例: SPEC-AUTH-001）を特定
+ブランチ名: feat/[タスク概要] または feat/T-[タスク番号]-[タスク概要]
+→ tasks/task-list.md から対応タスクを確認
+→ タスクの specId から Spec ID（例: SPEC-AUTH-001）を特定
 → docs/spec/ から仕様書を読み込む
 → docs/design/ から設計書を読み込む
 ```
