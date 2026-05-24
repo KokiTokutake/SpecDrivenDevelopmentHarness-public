@@ -16,7 +16,7 @@
 
 ## 実行手順
 
-### STEP -1: GitHub Project 設定の確認
+### STEP 1: GitHub Project 設定の確認
 
 `.github/project-config.json` が存在し、`project_number` が設定されているか確認する:
 
@@ -38,10 +38,10 @@ test -f .github/project-config.json && \
   /sdd-start            → 新規プロジェクトの初回セットアップ（リポジトリ作成から行う場合）
 ```
 
-> この確認は `project-config.json` がなくても `/task-start` の **ブランチ作成・仕様書読み込み** を実行するだけであれば省略できる。
-> ただし STEP 4（GitHub Project ステータス更新）は `project-config.json` がないとスキップし、代わりに「`/github-project-init` でセットアップ後に手動でステータスを更新してください」と案内する。
+> `project-config.json` がなくても **ブランチ作成・仕様書読み込みだけ** 行う場合は続行できる。
+> ただし STEP 10（GitHub Project ステータス更新）はスキップし、「`/github-project-init` でセットアップ後に手動でステータスを更新してください」と案内する。
 
-### STEP 0: 現在のgit状態チェック（必須ゲート）
+### STEP 2: 現在のgit状態チェック（必須ゲート）
 
 ```bash
 git branch --show-current
@@ -54,9 +54,9 @@ git status --short
 |------|------|
 | mainブランチ以外にいる | 「現在 `[branch]` ブランチにいます。別タスクが進行中ですか？」と確認してから続行 |
 | 未コミット変更がある | 「未コミットの変更があります。コミットしてからタスクを開始してください」と警告して中断 |
-| mainブランチ + 変更なし | 正常。STEP 0.5 へ進む |
+| mainブランチ + 変更なし | 正常。STEP 3 へ進む |
 
-### STEP 0.5: 未クローズの進行中タスク検出（必須）
+### STEP 3: 未クローズの進行中タスク検出（必須）
 
 `tasks/task-list.md` を読み込み、ステータスが「🏃 進行中」のタスクを列挙する。
 
@@ -77,9 +77,9 @@ git status --short
 - 判断できない場合 → `git log --oneline -20` でマージ済みかを確認
 
 > このチェックにより「進行中」ステータスの放置を防ぐ。
-> 進行中タスクがなければ STEP 1 へ進む。
+> 進行中タスクがなければ STEP 4 へ進む。
 
-### STEP 1: タスクの選択
+### STEP 4: タスクの選択
 
 引数でタスク ID が指定された場合はそのタスクを使用する。
 `/task-start TASK-001` のように呼び出す。
@@ -97,7 +97,7 @@ git status --short
 
 依存タスクが完了していない場合は「TASK-002 は TASK-001 が完了してから開始できます」と警告する。
 
-### STEP 1.5: アサインの確認（必須）
+### STEP 5: アサインの確認（必須）
 
 選択したタスクの GitHub Issue にアサイン済みメンバーがいるか確認する。
 Issue 番号が `tasks/task-list.md` に記載されている場合:
@@ -131,7 +131,7 @@ CURRENT_USER=$(gh api user --jq '.login')
   N) いいえ → 別のタスクを選ぶ
 ```
 
-**N の場合は中断し、タスク選択（STEP 1）に戻る。**
+**N の場合は中断し、タスク選択（STEP 4）に戻る。**
 **Y の場合のみ続行する。** アサインを自分に変更するかも確認する:
 
 ```
@@ -147,14 +147,14 @@ GitHub Issue がない場合（`tasks/task-list.md` に Issue 番号なし）は
 > アサイン済みメンバーの作業との衝突・二重対応を防ぐために存在する。
 > ユーザーが「スキップして」と言っても省略しない。
 
-### STEP 2: 関連ファイルの読み込み
+### STEP 6: 関連ファイルの読み込み
 
 選択したタスクに紐付く以下を読み込む:
 - 対応する仕様書（Spec ID から `docs/spec/` を検索）
 - 関連する設計書（`docs/design/`）
 - Constitution.md のコーディングルールセクション
 
-### STEP 2.5: 設計書の存在・承認チェック（必須ゲート）
+### STEP 7: 設計書の存在・承認チェック（必須ゲート）
 
 タスクに紐付く Spec ID に対して、以下を **両方** 確認する:
 
@@ -163,7 +163,7 @@ GitHub Issue がない場合（`tasks/task-list.md` に Issue 番号なし）は
 
 | 結果 | 対応 |
 |------|------|
-| 存在し、ステータスが `approved` | 正常。STEP 3 へ進む |
+| 存在し、ステータスが `approved` | 正常。STEP 8 へ進む |
 | 設計書が存在しない | **即時停止**（下記メッセージA） |
 | 存在するがステータスが `draft` | **即時停止**（下記メッセージB） |
 
@@ -193,7 +193,7 @@ GitHub Issue がない場合（`tasks/task-list.md` に Issue 番号なし）は
 
 > このゲートはユーザーが「スキップして」「続けて」と言っても通過させてはならない。
 
-### STEP 3: ブランチの作成（必須・スキップ不可）
+### STEP 8: ブランチの作成（必須・スキップ不可）
 
 対応する GitHub Issue 番号を `tasks/task-list.md` から取得し、ブランチを作成する。
 
@@ -210,9 +210,10 @@ git checkout -b feat/T-<タスク番号>-<タスク概要>
 # 例: feat/T-012-user-skill-api
 ```
 
-ブランチ作成が完了したことを確認してから STEP 3.5 へ進む。
+ブランチ作成が完了したことを確認してから STEP 9 へ進む。
+**ブランチが作成できない場合は実装を開始しない。**
 
-### STEP 3.5: design ブランチのマージ（存在する場合）
+### STEP 9: design ブランチのマージ（存在する場合）
 
 対応 Spec ID の `design/[SPEC-ID]` ブランチが存在する場合、フィーチャーブランチにマージする:
 
@@ -222,7 +223,12 @@ git branch --list "design/[SPEC-ID]"
 git merge design/[SPEC-ID] --no-ff -m "merge: design/[SPEC-ID] を取り込む"
 ```
 
-### STEP 4: GitHub Project のステータス更新
+| 結果 | 対応 |
+|------|------|
+| `design/[SPEC-ID]` が存在する | マージして STEP 10 へ進む |
+| 存在しない | スキップして STEP 10 へ進む（設計書は既に main にある） |
+
+### STEP 10: GitHub Project のステータス更新
 
 `.github/project-config.json` から Project 情報を読み込み、対応する Issue のステータスを "In Progress" に更新する:
 
@@ -255,7 +261,7 @@ gh api graphql -f query='
   -f optionId="$IN_PROGRESS_ID"
 ```
 
-### STEP 5: GitHub Issue へコメント追加
+### STEP 11: GitHub Issue へコメント追加
 
 実装開始を記録するコメントを Issue に追加する:
 
@@ -264,7 +270,7 @@ gh issue comment <issue番号> \
   --body "🏃 実装開始: ブランチ \`feat/<issue番号>-<タスク概要>\` を作成しました。"
 ```
 
-### STEP 6: 作業コンテキストのサマリー表示
+### STEP 12: 作業コンテキストのサマリー表示
 
 ```markdown
 ## タスク開始: TASK-001
@@ -292,7 +298,7 @@ When:  POST /api/auth/login を実行する
 Then:  HTTP 200 と JWT トークンが返る
 ```
 
-### STEP 7: task-list.md のステータス自動更新
+### STEP 13: task-list.md のステータス自動更新
 
 確認なしに `tasks/task-list.md` の該当タスクのステータスを「未着手」→「🏃 進行中」に更新する。
 
