@@ -26,6 +26,7 @@ SDD ハーネスで使えるスキルを工程別に一覧表示し、現在の�
 | スキル | 使う場面 |
 |--------|---------|
 | `/sdd-start` | 新プロジェクトへのSDD導入ウィザード（最初の一回、GitHubリポジトリ+Project作成を含む） |
+| `/github-project-init` | **既存プロジェクト**に GitHub Project を後付けセットアップ（途中から移行するとき） |
 | `/sdd-health` | SDD遵守状況の健全性チェック（定期実行推奨） |
 | `/sdd-skills` | このスキル一覧を表示 |
 | `/onboard-member` | 既存プロジェクトに新メンバーを追加オンボーディング |
@@ -96,7 +97,7 @@ SDD ハーネスで使えるスキルを工程別に一覧表示し、現在の�
 
 ---
 
-合計: 30スキル
+合計: 31スキル
 ```
 
 ### STEP 3: 現在の工程に応じたオススメを表示
@@ -122,6 +123,7 @@ SDD ハーネスで使えるスキルを工程別に一覧表示し、現在の�
 
 ```
 最初の一回:           /sdd-start  （GitHubリポジトリ+Project も作成）
+途中からGitHub移行:  /github-project-init  （既存プロジェクトに後付け）
 新メンバー追加:       /onboard-member
 仕様書を書く:         /spec-write → /spec-review
 タスクを計画する:     /tasks-plan （GitHub Issues を自動作成）

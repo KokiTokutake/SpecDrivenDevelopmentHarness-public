@@ -13,6 +13,31 @@ GitHub Project のアイテム状態をもとにタスクボードを表示し�
 
 ## 実行手順
 
+### STEP 0: GitHub Project 設定の確認
+
+`.github/project-config.json` が存在し、`project_number` が設定されているか確認する:
+
+```bash
+test -f .github/project-config.json && \
+  jq -e '.project_number != 0 and .project_number != null' .github/project-config.json
+```
+
+**存在しない・または未設定の場合:**
+
+```
+⛔ GitHub Project が設定されていません。
+
+GitHub Project からタスクボードを表示できません。
+
+セットアップを先に実行してください:
+  /github-project-init → 既存プロジェクトに GitHub Project を後付けセットアップ
+
+代替: tasks/task-list.md を読み込んでマークダウン形式で表示します。
+続けますか？ (Y/n)
+```
+
+Y の場合は `tasks/task-list.md` の内容をボード形式で表示して終了する（GitHub との連動なし）。
+
 ### STEP 1: GitHub Project からデータを取得
 
 `.github/project-config.json` を読み込み、Project データを取得する:

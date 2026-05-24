@@ -16,6 +16,31 @@
 
 ## 実行手順
 
+### STEP -1: GitHub Project 設定の確認
+
+`.github/project-config.json` が存在し、`project_number` が設定されているか確認する:
+
+```bash
+test -f .github/project-config.json && \
+  jq -e '.project_number != 0 and .project_number != null' .github/project-config.json
+```
+
+**存在しない・または `project_number` が 0 の場合、以下を表示して停止する:**
+
+```
+⛔ GitHub Project が設定されていません。
+
+  .github/project-config.json が見つからないか、project_number が未設定です。
+
+セットアップを先に実行してください:
+
+  /github-project-init  → 既存プロジェクトに GitHub Project を後付けセットアップ
+  /sdd-start            → 新規プロジェクトの初回セットアップ（リポジトリ作成から行う場合）
+```
+
+> この確認は `project-config.json` がなくても `/task-start` の **ブランチ作成・仕様書読み込み** を実行するだけであれば省略できる。
+> ただし STEP 4（GitHub Project ステータス更新）は `project-config.json` がないとスキップし、代わりに「`/github-project-init` でセットアップ後に手動でステータスを更新してください」と案内する。
+
 ### STEP 0: 現在のgit状態チェック（必須ゲート）
 
 ```bash

@@ -13,6 +13,29 @@
 
 ## 実行手順
 
+### STEP -1: GitHub Project 設定の確認
+
+`.github/project-config.json` が存在し、`project_number` が設定されているか確認する:
+
+```bash
+test -f .github/project-config.json && \
+  jq -e '.project_number != 0 and .project_number != null' .github/project-config.json
+```
+
+**存在しない・または未設定の場合:**
+
+```
+⚠️ .github/project-config.json が見つかりません。
+
+GitHub Project のステータス更新（STEP 6）はスキップされます。
+PR 作成・受入基準チェック・テスト確認は通常通り実行します。
+
+GitHub Project を設定する場合:
+  /github-project-init → 後付けセットアップ
+```
+
+`project-config.json` がなくても PR 作成までは進める。STEP 6・STEP 8 の Project 更新のみスキップする。
+
 ### STEP 0: ゲートチェック（必須・失敗時は即停止）
 
 ```bash

@@ -12,6 +12,26 @@
 
 ## 実行手順
 
+### STEP 0: GitHub Project 設定の確認
+
+`.github/project-config.json` が存在し、`project_number` が設定されているか確認する:
+
+```bash
+test -f .github/project-config.json && \
+  jq -e '.project_number != 0 and .project_number != null' .github/project-config.json
+```
+
+**存在しない・または未設定の場合、以下を表示して停止する:**
+
+```
+⛔ GitHub Project が設定されていません。
+
+スプリント終了処理には GitHub Project が必要です。
+
+先に実行してください:
+  /github-project-init → 既存プロジェクトに GitHub Project を後付けセットアップ
+```
+
 ### STEP 1: アクティブスプリントの確認
 
 GitHub Project の現在の Iteration を確認する:

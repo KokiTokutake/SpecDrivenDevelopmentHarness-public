@@ -78,7 +78,28 @@ SP 8 のタスクがある場合: 「このタスクは大きすぎます。さ�
 
 ### STEP 7: GitHub Issues の作成
 
-`.github/project-config.json` からオーナー・リポジトリ情報を読み込む。
+まず `.github/project-config.json` が存在するか確認する:
+
+```bash
+test -f .github/project-config.json && \
+  jq -e '.project_number != 0 and .project_number != null' .github/project-config.json
+```
+
+**存在しない・または未設定の場合:**
+
+```
+⚠️ .github/project-config.json が見つかりません。
+
+GitHub Issues の作成・Project への追加（STEP 7〜9）はスキップします。
+タスク一覧は tasks/task-list.md のみに保存されます。
+
+後から GitHub Project を設定する場合:
+  /github-project-init → 既存タスクを Issues としてインポートすることもできます
+```
+
+この場合は STEP 6 で `tasks/task-list.md` を更新した時点で終了する。
+
+**存在する場合、続けて** `.github/project-config.json` からオーナー・リポジトリ情報を読み込む。
 
 各タスクについて GitHub Issue を作成する:
 
