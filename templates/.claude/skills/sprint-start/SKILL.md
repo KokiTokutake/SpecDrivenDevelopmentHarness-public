@@ -13,7 +13,7 @@ GitHub Project の Iteration フィールドを使ってスプリントを管理
 
 ## 実行手順
 
-### STEP 0: GitHub Project 設定の確認
+### STEP 1: GitHub Project 設定の確認
 
 `.github/project-config.json` が存在し、`project_number` が設定されているか確認する:
 
@@ -33,27 +33,45 @@ test -f .github/project-config.json && \
   /github-project-init → 既存プロジェクトに GitHub Project を後付けセットアップ
 ```
 
-### STEP 1: 前スプリントの確認
+### STEP 2: 現在の Iteration 状況を確認
 
-現在アクティブなスプリント（Iteration）がないか確認する:
+既存の Iteration（スプリント）一覧を取得する:
 
 ```bash
-OWNER=$(jq -r '.owner' .github/project-config.json)
-PROJECT_NUMBER=$(jq -r '.project_number' .github/project-config.json)
+PROJECT_ID=$(jq -r '.project_id' .github/project-config.json)
+SPRINT_FIELD_ID=$(jq -r '.fields.sprint.id' .github/project-config.json)
 
-# 現在の Iteration 状況を確認
-gh project field-list $PROJECT_NUMBER --owner $OWNER --format json \
-  | jq '.fields[] | select(.name == "Sprint") | .configuration.iterations'
+gh api graphql -f query='
+  query($projectId: ID!) {
+    node(id: $projectId) {
+      ... on ProjectV2 {
+        fields(first: 20) {
+          nodes {
+            ... on ProjectV2IterationField {
+              name
+              configuration {
+                startDate
+                duration
+                iterations { id title startDate duration }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+' -f projectId="$PROJECT_ID" \
+  | jq '.data.node.fields.nodes[] | select(.name == "Sprint") | .configuration'
 ```
 
-アクティブなスプリントが存在する場合:
+直近のスプリント名から次のスプリント番号を自動提案する。
+直近のスプリントがまだ進行中の場合:
+
 ```
-Sprint N が進行中です。先に /sprint-end を実行してください。
+⚠️ Sprint N がまだ進行中です。先に /sprint-end を実行してください。
 ```
 
----
-
-### STEP 2: スプリント情報の収集
+### STEP 3: スプリント情報の収集
 
 以下を質問する:
 
@@ -67,66 +85,21 @@ Sprint N が進行中です。先に /sprint-end を実行してください。
 
 質問3: 開始日は？（デフォルト: 今日 YYYY-MM-DD）
 
-質問4: 終了日は？（デフォルト: 開始日 + 2週間）
+質問4: 期間は何日間ですか？（デフォルト: 14日）
 ```
 
----
+### STEP 4: GitHub Project Iteration の追加
 
-### STEP 3: GitHub Project Iteration の追加
-
-新しい Iteration をスプリントとして追加する。
-
-まず GraphQL ミューテーションで試みる:
+Iteration の追加は `updateProjectV2Field` で行う。
+**既存の Iteration リストに新しいものを追加して、フィールド設定ごと上書き**する仕組みのため、
+まず現在の Iteration 一覧を取得してから追加する:
 
 ```bash
 PROJECT_ID=$(jq -r '.project_id' .github/project-config.json)
 SPRINT_FIELD_ID=$(jq -r '.fields.sprint.id' .github/project-config.json)
 
-gh api graphql -f query='
-  mutation($projectId: ID!, $fieldId: ID!, $title: String!, $startDate: String!, $duration: Int!) {
-    addProjectV2IterationFieldIteration(input: {
-      projectId: $projectId
-      fieldId: $fieldId
-      startDate: $startDate
-      title: $title
-      duration: $duration
-    }) {
-      iteration { id title startDate duration }
-    }
-  }
-' -f projectId="$PROJECT_ID" \
-  -f fieldId="$SPRINT_FIELD_ID" \
-  -f title="<スプリント名>" \
-  -f startDate="<開始日 YYYY-MM-DD>" \
-  -F duration=14
-```
-
-**GraphQL が成功した場合**: 返却された `iteration.id` を記録して STEP 4 へ進む。
-
-**GraphQL が失敗した場合（`Field 'addProjectV2IterationFieldIteration' doesn't exist` 等）**:
-
-> GitHub Projects V2 の Iteration 追加は API の提供状況によって CLI から実行できない場合がある。
-> その場合は UI から手動で追加する:
-
-```
-📋 GitHub UI でのイテレーション追加手順:
-
-1. https://github.com/orgs/<owner>/projects/<number>/settings へアクセス
-2. 左サイドバーの「Sprint」フィールド（または作成した Iteration フィールド）をクリック
-3. 「+ Add iteration」ボタンをクリック
-4. 以下を入力:
-   - タイトル: <スプリント名>
-   - 開始日:   <開始日>
-   - 期間:     <日数（例: 14日）>
-5. 「Save」をクリック
-
-追加できたら「完了しました」と教えてください。Iteration ID を取得して続行します。
-```
-
-UI で追加後、Iteration ID を取得する:
-
-```bash
-gh api graphql -f query='
+# 既存 Iteration の一覧を取得（title・startDate・duration のみ）
+EXISTING_ITERATIONS=$(gh api graphql -f query='
   query($projectId: ID!) {
     node(id: $projectId) {
       ... on ProjectV2 {
@@ -134,7 +107,11 @@ gh api graphql -f query='
           nodes {
             ... on ProjectV2IterationField {
               name
-              configuration { iterations { id title startDate duration } }
+              configuration {
+                startDate
+                duration
+                iterations { title startDate duration }
+              }
             }
           }
         }
@@ -142,16 +119,55 @@ gh api graphql -f query='
     }
   }
 ' -f projectId="$PROJECT_ID" \
-  | jq '.data.node.fields.nodes[] | select(.name == "Sprint") | .configuration.iterations[-1]'
+  | jq '.data.node.fields.nodes[] | select(.name == "Sprint") | .configuration')
+
+FIELD_START_DATE=$(echo "$EXISTING_ITERATIONS" | jq -r '.startDate')
+FIELD_DURATION=$(echo "$EXISTING_ITERATIONS" | jq -r '.duration')
+
+# 既存リストに新スプリントを追加したリストを構築
+NEW_ITERATIONS=$(echo "$EXISTING_ITERATIONS" \
+  | jq --arg title "<スプリント名>" \
+       --arg date "<開始日 YYYY-MM-DD>" \
+       --argjson dur <日数> \
+  '.iterations + [{title: $title, startDate: $date, duration: $dur}]')
+
+# フィールド設定を更新（iterationConfiguration ごと上書き）
+RESULT=$(gh api graphql \
+  -f query='
+    mutation($fieldId: ID!, $startDate: Date!, $duration: Int!, $iterations: [ProjectV2Iteration!]!) {
+      updateProjectV2Field(input: {
+        fieldId: $fieldId
+        iterationConfiguration: {
+          startDate: $startDate
+          duration: $duration
+          iterations: $iterations
+        }
+      }) {
+        projectV2Field {
+          ... on ProjectV2IterationField {
+            configuration {
+              iterations { id title startDate duration }
+            }
+          }
+        }
+      }
+    }
+  ' \
+  -f fieldId="$SPRINT_FIELD_ID" \
+  -f startDate="$FIELD_START_DATE" \
+  -F duration=$FIELD_DURATION \
+  --input <(jq -n --argjson iters "$NEW_ITERATIONS" '{"iterations": $iters}'))
+
+# 新しく追加した Iteration の ID を取得
+NEW_ITERATION_ID=$(echo "$RESULT" \
+  | jq -r '.data.updateProjectV2Field.projectV2Field.configuration.iterations[-1].id')
+
+echo "✅ Iteration 作成完了: $NEW_ITERATION_ID"
 ```
 
-取得した Iteration ID を記録して STEP 4 へ進む。
+### STEP 5: タスクの選択とスプリント割り当て
 
----
-
-### STEP 4: タスクの選択とスプリント割り当て
-
-`tasks/task-list.md` からバックログ（未割り当て・未着手）のタスクを表示する:
+`tasks/task-list.md` からバックログ（Iteration 未割り当て・未着手）のタスクを表示する:
 
 ```
 📋 バックログ（スプリント未割り当て）:
@@ -169,19 +185,12 @@ gh api graphql -f query='
 続けますか？ (Y/n)
 ```
 
----
-
-### STEP 5: GitHub Issues を Iteration に割り当て
-
-選択した各タスクの GitHub Issue を Project Iteration に割り当てる:
+選択した各 Issue を作成した Iteration に割り当てる:
 
 ```bash
-PROJECT_ID=$(jq -r '.project_id' .github/project-config.json)
-PROJECT_NUMBER=$(jq -r '.project_number' .github/project-config.json)
 OWNER=$(jq -r '.owner' .github/project-config.json)
-SPRINT_FIELD_ID=$(jq -r '.fields.sprint.id' .github/project-config.json)
+PROJECT_NUMBER=$(jq -r '.project_number' .github/project-config.json)
 
-# 各 Issue の Project Item ID を取得し、Iteration を設定
 for ISSUE_NUMBER in <選択した Issue 番号のリスト>; do
   ITEM_ID=$(gh project item-list $PROJECT_NUMBER --owner $OWNER --format json \
     | jq -r --argjson n $ISSUE_NUMBER '.items[] | select(.content.number == $n) | .id')
@@ -200,11 +209,9 @@ for ISSUE_NUMBER in <選択した Issue 番号のリスト>; do
   ' -f projectId="$PROJECT_ID" \
     -f itemId="$ITEM_ID" \
     -f fieldId="$SPRINT_FIELD_ID" \
-    -f iterationId="<作成した Iteration ID>"
+    -f iterationId="$NEW_ITERATION_ID"
 done
 ```
-
----
 
 ### STEP 6: スプリントラベルの付与
 
@@ -220,17 +227,16 @@ gh label create "sprint:<スプリント名>" \
 gh issue edit <issue番号> --add-label "sprint:<スプリント名>"
 ```
 
----
-
 ### STEP 7: 完了サマリー
 
 ```
 ✅ スプリント開始完了！
 
-Sprint:   <スプリント名>
-ゴール:   <ゴール>
-期間:     <開始日> 〜 <終了日>（N 日間）
-タスク:   N 件 / 合計 X SP
+Sprint:      <スプリント名>
+ゴール:      <ゴール>
+期間:        <開始日> 〜 <終了日>（N 日間）
+タスク:      N 件 / 合計 X SP
+Iteration ID: <ID>
 
 GitHub Project:
   https://github.com/orgs/<owner>/projects/<number>
@@ -245,11 +251,12 @@ GitHub Project:
 
 ## 注意事項
 
+- Iteration 追加の仕組み: `updateProjectV2Field` で既存リストに追記してフィールドごと上書きする。既存 Iteration のデータは消えないが、`id` は付与されたもののみ `title`・`startDate`・`duration` を渡せば保持される
 - スプリントゴールは Constitution.md・承認済み Spec と整合していること
 - 未承認の Spec に紐付くタスクを含める場合は警告を表示する:
   「TASK-XXX は未承認の SPEC-XXX-XXX (status: draft) に紐付いています。
    スプリント開始前に仕様書を承認することを推奨します。」
-- `gh` コマンドが認証されていない場合は `gh auth login` を案内する
+- `gh auth login` で認証が必要な場合は先に案内する
 
 ---
 
