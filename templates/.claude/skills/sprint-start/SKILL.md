@@ -74,7 +74,9 @@ Sprint N が進行中です。先に /sprint-end を実行してください。
 
 ### STEP 3: GitHub Project Iteration の追加
 
-新しい Iteration をスプリントとして追加する。GitHub Projects V2 では Iteration は GraphQL で追加する:
+新しい Iteration をスプリントとして追加する。
+
+まず GraphQL ミューテーションで試みる:
 
 ```bash
 PROJECT_ID=$(jq -r '.project_id' .github/project-config.json)
@@ -99,7 +101,51 @@ gh api graphql -f query='
   -F duration=14
 ```
 
-作成された Iteration ID を記録する。
+**GraphQL が成功した場合**: 返却された `iteration.id` を記録して STEP 4 へ進む。
+
+**GraphQL が失敗した場合（`Field 'addProjectV2IterationFieldIteration' doesn't exist` 等）**:
+
+> GitHub Projects V2 の Iteration 追加は API の提供状況によって CLI から実行できない場合がある。
+> その場合は UI から手動で追加する:
+
+```
+📋 GitHub UI でのイテレーション追加手順:
+
+1. https://github.com/orgs/<owner>/projects/<number>/settings へアクセス
+2. 左サイドバーの「Sprint」フィールド（または作成した Iteration フィールド）をクリック
+3. 「+ Add iteration」ボタンをクリック
+4. 以下を入力:
+   - タイトル: <スプリント名>
+   - 開始日:   <開始日>
+   - 期間:     <日数（例: 14日）>
+5. 「Save」をクリック
+
+追加できたら「完了しました」と教えてください。Iteration ID を取得して続行します。
+```
+
+UI で追加後、Iteration ID を取得する:
+
+```bash
+gh api graphql -f query='
+  query($projectId: ID!) {
+    node(id: $projectId) {
+      ... on ProjectV2 {
+        fields(first: 20) {
+          nodes {
+            ... on ProjectV2IterationField {
+              name
+              configuration { iterations { id title startDate duration } }
+            }
+          }
+        }
+      }
+    }
+  }
+' -f projectId="$PROJECT_ID" \
+  | jq '.data.node.fields.nodes[] | select(.name == "Sprint") | .configuration.iterations[-1]'
+```
+
+取得した Iteration ID を記録して STEP 4 へ進む。
 
 ---
 
