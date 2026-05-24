@@ -1,0 +1,27 @@
+{
+  "_comment": "このファイルは /sdd-start スキルが自動生成します。手動編集の場合は /sdd-start の STEP 3〜4 を参照してください。",
+  "owner": "",
+  "repo": "",
+  "project_number": 0,
+  "project_id": "",
+  "fields": {
+    "status": {
+      "id": "",
+      "options": {
+        "todo": "",
+        "in_progress": "",
+        "in_review": "",
+        "done": ""
+      }
+    },
+    "sprint": {
+      "id": ""
+    },
+    "story_points": {
+      "id": ""
+    },
+    "spec_id": {
+      "id": ""
+    }
+  }
+}
