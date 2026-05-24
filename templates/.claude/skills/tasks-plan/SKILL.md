@@ -154,6 +154,61 @@ gh project item-add $PROJECT_NUMBER --owner $OWNER \
   --url https://github.com/<owner>/<repo>/issues/<issue-number>
 ```
 
+### STEP 8-b: GitHub Project フィールドの設定
+
+Project に追加した各アイテムに対して、Story Points と Spec ID フィールドを設定する。
+
+```bash
+PROJECT_ID=$(jq -r '.project_id' .github/project-config.json)
+SP_FIELD_ID=$(jq -r '.fields.story_points.id' .github/project-config.json)
+SPEC_FIELD_ID=$(jq -r '.fields.spec_id.id' .github/project-config.json)
+OWNER=$(jq -r '.owner' .github/project-config.json)
+PROJECT_NUMBER=$(jq -r '.project_number' .github/project-config.json)
+
+# 各タスクについて実行（例: TASK-001 / SP=3 / SPEC-AUTH-001 / Issue #42）
+ITEM_ID=$(gh project item-list $PROJECT_NUMBER --owner $OWNER --format json \
+  | jq -r '.items[] | select(.content.number == <issue番号>) | .id')
+
+# Story Points を設定
+gh api graphql -f query='
+  mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $value: Float!) {
+    updateProjectV2ItemFieldValue(input: {
+      projectId: $projectId
+      itemId: $itemId
+      fieldId: $fieldId
+      value: { number: $value }
+    }) {
+      projectV2Item { id }
+    }
+  }
+' -f projectId="$PROJECT_ID" \
+  -f itemId="$ITEM_ID" \
+  -f fieldId="$SP_FIELD_ID" \
+  -F value=<ストーリーポイント数>
+
+# Spec ID を設定
+gh api graphql -f query='
+  mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $value: String!) {
+    updateProjectV2ItemFieldValue(input: {
+      projectId: $projectId
+      itemId: $itemId
+      fieldId: $fieldId
+      value: { text: $value }
+    }) {
+      projectV2Item { id }
+    }
+  }
+' -f projectId="$PROJECT_ID" \
+  -f itemId="$ITEM_ID" \
+  -f fieldId="$SPEC_FIELD_ID" \
+  -f value="<Spec ID>"
+```
+
+`story_points.id` または `spec_id.id` が空文字の場合は当該フィールドをスキップし、
+「Spec ID フィールドが未設定です。`/github-project-init` でフィールドを追加してください」と案内する。
+
+---
+
 ### STEP 9: task-list.md に Issue 番号を追記
 
 作成された GitHub Issue 番号を `tasks/task-list.md` の各タスク行に追記する:

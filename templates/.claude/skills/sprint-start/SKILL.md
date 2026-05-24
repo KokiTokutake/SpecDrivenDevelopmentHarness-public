@@ -213,6 +213,24 @@ for ISSUE_NUMBER in <選択した Issue 番号のリスト>; do
 done
 ```
 
+### STEP 5-b: task-list.md へのスプリント割り当て書き戻し
+
+GitHub Project に割り当てた内容を `tasks/task-list.md` にも反映し、両者の乖離を防ぐ。
+
+選択した各タスクの行について、`Sprint` 列を `—` から今回のスプリント名に更新する:
+
+```
+tasks/task-list.md の対象タスク行（例）:
+  変更前: | TASK-005 | ダッシュボードAPI | SPEC-DASH-001 | 3 | #48 | - | High | —        | 未着手 |
+  変更後: | TASK-005 | ダッシュボードAPI | SPEC-DASH-001 | 3 | #48 | - | High | Sprint 2 | 未着手 |
+```
+
+- スプリント名は STEP 3 で入力されたものをそのまま使用する
+- `Sprint` 列が存在しない古い形式の場合は「`Sprint` 列が存在しません。`tasks/task-list.md` を最新のテンプレートに更新してください」と案内してスキップする
+- `tasks/task-list.md` が存在しない場合はスキップする
+
+---
+
 ### STEP 6: スプリントラベルの付与
 
 選択した Issue にスプリントラベルを付与する（任意だが推奨）:
