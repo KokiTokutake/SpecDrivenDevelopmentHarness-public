@@ -1,0 +1,21 @@
+name: Auto Add to Project
+
+on:
+  issues:
+    types: [opened, labeled]
+
+jobs:
+  add-to-project:
+    name: Add issue to project
+    runs-on: ubuntu-latest
+    # task または bug ラベルの Issue のみ対象
+    if: |
+      contains(github.event.issue.labels.*.name, 'task') ||
+      contains(github.event.issue.labels.*.name, 'bug')
+    steps:
+      - uses: actions/add-to-project@v1.0.2
+        with:
+          # PROJECT_NUMBER を実際の番号に書き換える（例: 1）
+          # project-config.json の project_number を参照
+          project-url: https://github.com/orgs/${{ github.repository_owner }}/projects/PROJECT_NUMBER
+          github-token: ${{ secrets.ADD_TO_PROJECT_TOKEN }}

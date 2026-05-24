@@ -110,13 +110,33 @@ gh api repos/{owner}/{repo}/milestones \
 
 ## 6. GitHub Projects 設定（任意）
 
-タスク管理を GitHub Projects で行う場合：
+タスク管理を GitHub Projects で行う場合は `/github-project-init` スキルを使用してください。
+手動で設定する場合は以下の手順に従います。
 
-1. リポジトリの **Projects** タブ → **New project**
-2. **Board** ビューを選択
-3. カラム設定:
-   - `未着手` / `進行中` / `レビュー中` / `完了`
-4. Issue を作成すると自動でボードに追加されるように設定
+### 6-1. Project の作成とリポジトリ紐付け
+
+```bash
+OWNER=$(gh repo view --json owner --jq '.owner.login')
+REPO=$(gh repo view --json name --jq '.name')
+
+# Project を作成
+gh project create --owner $OWNER --title "<プロジェクト名>"
+
+# リポジトリを Project に紐付ける（必須）
+# ※ 紐付けないと「Add items from repository」が使用できない
+gh project link <project-number> --owner $OWNER --repo $REPO
+```
+
+### 6-2. Auto-add ワークフローの設定
+
+`task` / `bug` ラベルの Issue を自動で Project に追加するには：
+
+1. `.github/workflows/auto-add-to-project.yml` の `PROJECT_NUMBER` を書き換える
+2. `ADD_TO_PROJECT_TOKEN`（repo + project 権限の PAT）を Secrets に登録する
+
+```bash
+gh secret set ADD_TO_PROJECT_TOKEN
+```
 
 ---
 

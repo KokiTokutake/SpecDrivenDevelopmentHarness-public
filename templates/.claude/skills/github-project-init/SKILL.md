@@ -51,6 +51,20 @@ gh project create --owner $OWNER --title "<プロジェクト名>"
 gh project list --owner $OWNER --format json | head -3
 ```
 
+### STEP 2-b: リポジトリを Project に紐付ける
+
+Project を作成（または既存 Project を使用）した直後に、リポジトリを明示的に紐付ける。
+これにより Project の「Add items from repository」が有効になる。
+
+```bash
+# リポジトリを Project に紐付ける
+gh project link $PROJECT_NUMBER --owner $OWNER --repo $REPO
+```
+
+紐付けが成功すると、GitHub Web UI の Project Settings → "Linked repositories" に表示される。
+
+---
+
 ### STEP 3: 必須フィールドの確認と作成
 
 既存 Project の場合はフィールドを確認し、不足しているものだけ追加する。
@@ -215,6 +229,52 @@ gh label create "spec:review"   --color "DBEAFE" --description "仕様書レビ�
 gh label create "spec:approved" --color "D1FAE5" --description "仕様書承認済み"
 ```
 
+### STEP 8-b: Auto-add ワークフローの生成
+
+`task` / `bug` ラベルの Issue が作成されたとき、自動で Project に追加される GitHub Actions ワークフローを生成する。
+
+```bash
+mkdir -p .github/workflows
+
+cat > .github/workflows/auto-add-to-project.yml << 'EOF'
+name: Auto Add to Project
+
+on:
+  issues:
+    types: [opened, labeled]
+
+jobs:
+  add-to-project:
+    name: Add issue to project
+    runs-on: ubuntu-latest
+    if: |
+      contains(github.event.issue.labels.*.name, 'task') ||
+      contains(github.event.issue.labels.*.name, 'bug')
+    steps:
+      - uses: actions/add-to-project@v1.0.2
+        with:
+          project-url: https://github.com/orgs/${{ github.repository_owner }}/projects/PROJECT_NUMBER
+          github-token: ${{ secrets.ADD_TO_PROJECT_TOKEN }}
+EOF
+```
+
+生成後、ユーザーに以下を案内する:
+
+```
+⚠️ ワークフローを有効にするには以下の設定が必要です:
+
+1. ファイル内の PROJECT_NUMBER を実際の番号（例: 1）に書き換える
+2. GitHub で Personal Access Token を作成する
+   - Settings → Developer settings → Personal access tokens → Fine-grained tokens
+   - 権限: repo（read）+ project（read/write）
+3. リポジトリの Secrets に登録する
+   gh secret set ADD_TO_PROJECT_TOKEN
+
+設定後、task または bug ラベルの Issue を作成すると自動で Project に追加されます。
+```
+
+---
+
 ### STEP 9: 完了サマリー
 
 ```
@@ -231,6 +291,8 @@ GitHub Project: https://github.com/orgs/<owner>/projects/<number>
   /task-board   → GitHub Project のタスク状況を確認する
   /sprint-start → スプリントを開始する（Iteration を設定する）
   /task-start   → タスクを選んで実装を開始する
+
+⚠️ Auto-add ワークフローを有効にするには ADD_TO_PROJECT_TOKEN の設定が必要です（STEP 8-b を参照）
 ```
 
 ---
