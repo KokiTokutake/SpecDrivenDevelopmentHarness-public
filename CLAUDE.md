@@ -8,10 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **ゴール**: 書籍「仕様駆動開発 実践入門 〜 AIで実現する開発方法論」の手法を、誰でも即座に使える形のテンプレート・ワークフロー・自動化スクリプトとして実装する。
 
-**知識ベース**:
-- `docs/ベース知識/book.pdf` — 書籍PDF（653ページ）
-- `docs/ベース知識/summary.md` — 書籍要約（最初に参照すべき）
-- `docs/ベース知識/page_NNNN.png` — 書籍スクリーンショット（477枚、詳細確認用）
+**知識ベース**: 書籍は各自で用意して参照する（書籍の PDF・要約・画像はこのリポジトリに含めない）。
 
 ## SDDの核心概念
 
